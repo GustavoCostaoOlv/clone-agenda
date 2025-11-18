@@ -1,190 +1,291 @@
+<?php
+session_start(); 
+
+// Verifica se o usuário está autenticado
+if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
+    header("Location: paginas/home.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="pt_br">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>New Agenda 2.0 | Cadastro de Usuário</title>
-  <!-- Tell the browser to be responsive to screen width -->
+  <title>Cadastro de Cursos | Escolha Já</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                boxShadow: {
+                    '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+                }
+            }
+        }
+    }
+  </script>
+  
   <!-- Font Awesome -->
   <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-  <!-- icheck bootstrap -->
-  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-  <!-- Google Font: Source Sans Pro -->
+  
+  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Source Sans Pro', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+  </style>
 </head>
-<body class="hold-transition login-page">
-<div class="login-box">
-  <div class="login-logo">
-    <a href="cad_user.php" style="font-size: 25px"><b>Cadastre-se para ter acesso</b></a>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+<div class="w-full max-w-md">
+  <!-- Logo -->
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-bold text-white">
+      <a href="#" class="hover:text-blue-200 transition-colors">
+        <span class="text-blue-200">Cursos</span> <span class="text-white">Online</span> <span class="text-blue-200">1.0</span>
+      </a>
+    </h1>
+    <p class="text-blue-100 mt-2">Seu Planejamento de Carreira Virtual</p>
   </div>
-  <!-- /.login-logo -->
-  <div class="card">
-    <div class="card-body login-card-body">
-      <p class="login-box-msg">Cadastre todos os dados para ter acesso a agenda</p>
+
+  <!-- Card de Cadastro -->
+  <div class="bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all hover:shadow-3xl">
+    <div class="p-8">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-user-plus text-blue-600 text-2xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800">Criar Nova Conta</h2>
+        <p class="text-gray-600 mt-2">Cadastre todos os dados para ter acesso aos cursos</p>
+      </div>
 
       <form action="" method="post" enctype="multipart/form-data">
-      <div class="form-group">
-        <label for="exampleInputFile">Foto do usuário</label>
-        <div class="input-group">
-            <div class="custom-file">
-            <input type="file" class="custom-file-input" name="foto" id="foto">
-            <label class="custom-file-label" for="exampleInputFile">Arquivo de imagem</label>
-            </div>
-            
-        </div>
-        </div>
-        <div class="input-group mb-3">
-          <input type="text" name="nome" class="form-control" placeholder="Digite seu Nome..." required>
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
-            </div>
+        <!-- Foto Input -->
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-medium mb-2" for="foto">
+            Foto do usuário
+          </label>
+          <div class="relative">
+            <input type="file" name="foto" id="foto"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                   accept="image/png, image/jpg, image/jpeg, image/gif">
           </div>
+          <p class="text-xs text-gray-500 mt-1">Formatos: PNG, JPG, JPEG, GIF</p>
         </div>
-        <div class="input-group mb-3">
-          <input type="email" name="email" class="form-control" placeholder="Digite seu E-mail..." required>
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-envelope"></span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="input-group mb-3">
-          <input type="password" name="senha" class="form-control" placeholder="Digite sua Senha..." required>
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-lock"></span>
+
+        <!-- Nome Input -->
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-medium mb-2" for="nome">
+            Nome Completo
+          </label>
+          <div class="relative">
+            <input type="text" name="nome" id="nome"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all pl-12"
+                   placeholder="Seu nome completo" required>
+            <div class="absolute left-4 top-3 text-gray-400">
+              <i class="fas fa-user"></i>
             </div>
           </div>
         </div>
-        <div class="row">
-          <div class="col-8">
-            
+
+        <!-- Email Input -->
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-medium mb-2" for="email">
+            E-mail
+          </label>
+          <div class="relative">
+            <input type="email" name="email" id="email"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all pl-12"
+                   placeholder="seu@email.com" required>
+            <div class="absolute left-4 top-3 text-gray-400">
+              <i class="fas fa-envelope"></i>
+            </div>
           </div>
-          <!-- /.col -->
-          <div class="col-12" style="margin-bottom: 25px">
-            <button type="submit" name="botao" class="btn btn-primary btn-block">Finalizar Cadastro</button>
-          </div>
-          <!-- /.col -->
         </div>
+
+        <!-- Password Input -->
+        <div class="mb-6">
+          <label class="block text-gray-700 text-sm font-medium mb-2" for="senha">
+            Senha
+          </label>
+          <div class="relative">
+            <input type="password" name="senha" id="senha"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all pl-12"
+                   placeholder="Sua senha" required>
+            <div class="absolute left-4 top-3 text-gray-400">
+              <i class="fas fa-lock"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" name="botao" 
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg">
+          <i class="fas fa-user-plus mr-2"></i>
+          Finalizar Cadastro
+        </button>
       </form>
-      <?php
-include_once('config/conexao.php'); // Inclui o arquivo de conexão com o banco de dados
 
-// Verifica se o formulário foi enviado
-if (isset($_POST['botao'])) {
-    // Recebe os dados do formulário
-    $nome = $_POST['nome'];
-    $email = $_POST['email'];
-    $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT); // Usando hash seguro para a senha
+      <!-- Alertas PHP -->
+      <div class="mt-6 space-y-3">
+        <?php
+        include_once('config/conexao.php');
 
-    // Verifica se foi enviado algum arquivo de foto
-    if (!empty($_FILES['foto']['name'])) {
-        $formatosPermitidos = array("png", "jpg", "jpeg", "gif"); // Formatos permitidos
-        $extensao = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION); // Obtém a extensão do arquivo
+        // Verifica se o formulário foi enviado
+        if (isset($_POST['botao'])) {
+            // Recebe os dados do formulário
+            $nome = $_POST['nome'];
+            $email = $_POST['email'];
+            $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
 
-        // Verifica se a extensão do arquivo está nos formatos permitidos
-        if (in_array(strtolower($extensao), $formatosPermitidos)) {
-            $pasta = "img/user/"; // Define o diretório para upload
-            $temporario = $_FILES['foto']['tmp_name']; // Caminho temporário do arquivo
-            $novoNome = uniqid() . ".$extensao"; // Gera um nome único para o arquivo
+            // Verifica se foi enviado algum arquivo de foto
+            if (!empty($_FILES['foto']['name'])) {
+                $formatosPermitidos = array("png", "jpg", "jpeg", "gif");
+                $extensao = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
 
-            // Move o arquivo para o diretório de imagens
-            if (move_uploaded_file($temporario, $pasta . $novoNome)) {
-                // Sucesso no upload da imagem
+                if (in_array(strtolower($extensao), $formatosPermitidos)) {
+                    $pasta = "img/user/";
+                    $temporario = $_FILES['foto']['tmp_name'];
+                    $novoNome = uniqid() . ".$extensao";
+
+                    if (move_uploaded_file($temporario, $pasta . $novoNome)) {
+                        // Sucesso no upload da imagem
+                    } else {
+                        echo '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
+                                <div class="flex">
+                                  <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-triangle text-red-500"></i>
+                                  </div>
+                                  <div class="ml-3">
+                                    <p class="text-sm text-red-700">
+                                      <strong>Erro!</strong> Não foi possível fazer o upload do arquivo.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>';
+                        exit();
+                    }
+                } else {
+                    echo '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
+                            <div class="flex">
+                              <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-red-500"></i>
+                              </div>
+                              <div class="ml-3">
+                                <p class="text-sm text-red-700">
+                                  <strong>Formato Inválido!</strong> Formato de arquivo não permitido.
+                                </p>
+                              </div>
+                            </div>
+                          </div>';
+                    exit();
+                }
             } else {
-                echo '<div class="container">
-                        <div class="alert alert-danger alert-dismissible">
-                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                            <h5><i class="icon fas fa-exclamation-triangle"></i> Erro!</h5>
-                            Não foi possível fazer o upload do arquivo.
-                        </div>
-                    </div>';
-                exit(); // Termina a execução do script após o erro
+                $novoNome = 'avatar-padrao.png';
             }
-        } else {
-            echo '<div class="container">
-                    <div class="alert alert-danger alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                        <h5><i class="icon fas fa-exclamation-triangle"></i> Formato Inválido!</h5>
-                        Formato de arquivo não permitido.
-                    </div>
-                </div>';
-            exit(); // Termina a execução do script após o erro
+
+            // Prepara a consulta SQL
+            $cadastro = "INSERT INTO tb_user (foto_user, nome_user, email_user, senha_user) VALUES (:foto, :nome, :email, :senha)";
+
+            try {
+                $result = $conect->prepare($cadastro);
+                $result->bindParam(':nome', $nome, PDO::PARAM_STR);
+                $result->bindParam(':email', $email, PDO::PARAM_STR);
+                $result->bindParam(':senha', $senha, PDO::PARAM_STR);
+                $result->bindParam(':foto', $novoNome, PDO::PARAM_STR);
+                $result->execute();
+                $contar = $result->rowCount();
+
+                if ($contar > 0) {
+                    echo '<div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg shadow-sm">
+                            <div class="flex">
+                              <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                              </div>
+                              <div class="ml-3">
+                                <p class="text-sm text-green-700">
+                                  <strong>Sucesso!</strong> Dados inseridos com sucesso!
+                                </p>
+                              </div>
+                            </div>
+                          </div>';
+                } else {
+                    echo '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
+                            <div class="flex">
+                              <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500"></i>
+                              </div>
+                              <div class="ml-3">
+                                <p class="text-sm text-red-700">
+                                  <strong>Erro!</strong> Dados não inseridos!
+                                </p>
+                              </div>
+                            </div>
+                          </div>';
+                }
+            } catch (PDOException $e) {
+                error_log("ERRO DE PDO: " . $e->getMessage());
+                echo '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
+                        <div class="flex">
+                          <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-red-500"></i>
+                          </div>
+                          <div class="ml-3">
+                            <p class="text-sm text-red-700">
+                              <strong>Erro!</strong> Ocorreu um erro ao tentar inserir os dados.
+                            </p>
+                          </div>
+                        </div>
+                      </div>';
+            }
         }
-    } else {
-        // Define um avatar padrão caso não seja enviado nenhum arquivo de foto
-        $novoNome = 'avatar-padrao.png'; // Nome do arquivo de avatar padrão
-    }
+        ?>
+      </div>
 
-    // Prepara a consulta SQL para inserção dos dados do usuário
-    $cadastro = "INSERT INTO tb_user (foto_user, nome_user, email_user, senha_user) VALUES (:foto, :nome, :email, :senha)";
-
-    try {
-        $result = $conect->prepare($cadastro);
-        $result->bindParam(':nome', $nome, PDO::PARAM_STR);
-        $result->bindParam(':email', $email, PDO::PARAM_STR);
-        $result->bindParam(':senha', $senha, PDO::PARAM_STR);
-        $result->bindParam(':foto', $novoNome, PDO::PARAM_STR);
-        $result->execute();
-        $contar = $result->rowCount();
-
-        if ($contar > 0) {
-            echo '<div class="container">
-                    <div class="alert alert-success alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                        <h5><i class="icon fas fa-check"></i> OK!</h5>
-                        Dados inseridos com sucesso !!!
-                    </div>
-                </div>';
-        } else {
-            echo '<div class="container">
-                    <div class="alert alert-danger alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                        <h5><i class="icon fas fa-check"></i> Erro!</h5>
-                        Dados não inseridos !!!
-                    </div>
-                </div>';
-        }
-    } catch (PDOException $e) {
-        // Loga a mensagem de erro em vez de exibi-la para o usuário
-        error_log("ERRO DE PDO: " . $e->getMessage());
-        echo '<div class="container">
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                    <h5><i class="icon fas fa-exclamation-triangle"></i> Erro!</h5>
-                    Ocorreu um erro ao tentar inserir os dados.
-                </div>
-            </div>';
-    }
-}
-?>
-     
-      <!-- /.social-auth-links -->
-
-      
-      <p style="text-align: center;">
-        <a href="index.php" class="text-center">Voltar para o Login!</a>
-      </p>
+      <!-- Link para Login -->
+      <div class="text-center mt-8 pt-6 border-t border-gray-200">
+        <p class="text-gray-600">
+          Já tem uma conta?
+          <a href="index.php" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors ml-1">
+            Faça login aqui!
+          </a>
+        </p>
+      </div>
     </div>
-    <!-- /.login-card-body -->
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center mt-8">
+    <p class="text-blue-100 text-sm">© 2025 Cadastro de Cursos - Todos os direitos reservados para Luiz Gustavo</p>
   </div>
 </div>
-<!-- /.login-box -->
 
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-
+<!-- Script para melhorar a experiência -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Foco automático no campo nome
+    document.getElementById('nome')?.focus();
+    
+    // Animação suave para os alertas
+    const alerts = document.querySelectorAll('[class*="bg-"]');
+    alerts.forEach(alert => {
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateY(-10px)';
+        
+        setTimeout(() => {
+            alert.style.transition = 'all 0.3s ease';
+            alert.style.opacity = '1';
+            alert.style.transform = 'translateY(0)';
+        }, 100);
+    });
+});
+</script>
 </body>
 </html>
