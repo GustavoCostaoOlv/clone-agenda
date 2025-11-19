@@ -1,8 +1,8 @@
 <footer class="main-footer">
-    <strong>Copyright &copy; 2020 - Todos os direitos reservados.</strong>
+    <strong>Copyright &copy; 2025 - Todos os direitos reservados para Luiz Gustavo</strong>
     
     <div class="float-right d-none d-sm-inline-block">
-      <b>AG Versão</b> 2.0
+      <b>Sistema de Cursos</b> 1.0
     </div>
   </footer>
 

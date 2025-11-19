@@ -21,6 +21,11 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
     tailwind.config = {
         theme: {
             extend: {
+                colors: {
+                    primary: '#4A5D73',
+                    primarydark: '#324151',
+                    primarylight: '#E8ECF1'
+                },
                 boxShadow: {
                     '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
                 }
@@ -38,7 +43,7 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
   <style>
     body {
       font-family: 'Source Sans Pro', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #4A5D73 0%, #324151 100%);
     }
   </style>
 </head>
@@ -48,19 +53,19 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
   <!-- Logo -->
   <div class="text-center mb-8">
     <h1 class="text-4xl font-bold text-white">
-      <a href="#" class="hover:text-blue-200 transition-colors">
-        <span class="text-blue-200">Seus Cursos</span> <span class="text-white">Online</span> <span class="text-blue-200"></span>
+      <a href="#" class="hover:text-primarylight transition-colors">
+        <span class="text-primarylight">Seus Cursos</span> <span class="text-white">Online</span>
       </a>
     </h1>
-    <p class="text-blue-100 mt-2">Seu Planejamento de Carreira Virtual</p>
+    <p class="text-primarylight mt-2">Seu Planejamento de Carreira Virtual</p>
   </div>
 
   <!-- Card de Login -->
   <div class="bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all hover:shadow-3xl">
     <div class="p-8">
       <div class="text-center mb-6">
-        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i class="fas fa-graduation-cap text-purple-600 text-2xl"></i>
+        <div class="w-16 h-16 bg-primarylight rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-graduation-cap text-primary text-2xl"></i>
         </div>
         <h2 class="text-2xl font-bold text-gray-800">Seja Bem-vindo</h2>
         <p class="text-gray-600 mt-2">Para acessar entre com E-mail e Senha</p>
@@ -74,7 +79,7 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
           </label>
           <div class="relative">
             <input type="email" name="email" id="email"
-                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all pl-12"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all pl-12"
                    placeholder="seu@email.com" required>
             <div class="absolute left-4 top-3 text-gray-400">
               <i class="fas fa-envelope"></i>
@@ -89,7 +94,7 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
           </label>
           <div class="relative">
             <input type="password" name="senha" id="senha"
-                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all pl-12"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all pl-12"
                    placeholder="Sua senha" required>
             <div class="absolute left-4 top-3 text-gray-400">
               <i class="fas fa-lock"></i>
@@ -99,7 +104,7 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
 
         <!-- Submit Button -->
         <button type="submit" name="login" 
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg">
+                class="w-full bg-primary hover:bg-primarydark text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-lg">
           <i class="fas fa-sign-in-alt mr-2"></i>
           Acessar Cursos
         </button>
@@ -258,7 +263,7 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
       <div class="text-center mt-8 pt-6 border-t border-gray-200">
         <p class="text-gray-600">
           Não tem uma conta?
-          <a href="cad_user.php" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors ml-1">
+          <a href="cad_user.php" class="text-primary hover:text-primarydark font-semibold transition-colors ml-1">
             Cadastre-se aqui!
           </a>
         </p>
@@ -268,7 +273,7 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
 
   <!-- Footer -->
   <div class="text-center mt-8">
-    <p class="text-blue-100 text-sm">© 2025 Cadastro de Cursos - Todos os direitos reservados para Luiz Gustavo</p>
+    <p class="text-primarylight text-sm">© 2025 Cadastro de Cursos - Todos os direitos reservados para Luiz Gustavo</p>
   </div>
 </div>
 
@@ -292,6 +297,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-<!-- teste de commit -->
 </body>
 </html>

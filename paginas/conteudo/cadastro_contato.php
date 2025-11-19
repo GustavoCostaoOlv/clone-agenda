@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4A5D73 0%, #324151 100%);
         }
         .modern-input {
             background: rgba(255, 255, 255, 0.95);
@@ -21,9 +21,9 @@
         }
         .modern-input:focus {
             background: white;
-            border-color: #8b5cf6;
+            border-color: #4A5D73;
             box-shadow: 
-                0 0 0 3px rgba(139, 92, 246, 0.1),
+                0 0 0 3px rgba(74, 93, 115, 0.2),
                 0 10px 15px -3px rgba(0, 0, 0, 0.1),
                 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
@@ -39,8 +39,8 @@
 </head>
 <body class="min-h-screen">
 
-  <!-- Header Mais Destacado -->
-<div class="bg-gradient-to-r from-purple-600 to-purple-800 shadow-2xl">
+  <!-- Header -->
+<div class="bg-gradient-to-r from-[#4A5D73] to-[#324151] shadow-2xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-center items-center py-8">
             <h1 class="text-3xl font-bold text-white text-center">Cadastro de Cursos</h1>
@@ -58,7 +58,7 @@
                     <div class="glass-card rounded-2xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
                         
                         <!-- Cabeçalho do Formulário -->
-                        <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-8 py-6">
+                        <div class="bg-gradient-to-r from-[#4A5D73] to-[#324151] px-8 py-6">
                             <h2 class="text-2xl font-bold text-white">Cadastrar curso</h2>
                         </div>
 
@@ -110,9 +110,6 @@
                                     <option value="Artes" class="text-gray-700">Artes</option>
                                     <option value="Idiomas" class="text-gray-700">Idiomas</option>
                                 </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                    <i class="fas fa-chevron-down"></i>
-                                </div>
                             </div>
 
                             <!-- Descrição do Curso -->
@@ -168,17 +165,17 @@
                                     <input 
                                         type="file" 
                                         name="foto"
-                                        class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                        class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#E8ECF1] file:text-[#4A5D73] hover:file:bg-[#dfe5ea]"
                                     >
                                 </div>
                             </div>
 
                             <!-- Checkbox de Confirmação -->
-                            <div class="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-100">
+                            <div class="flex items-center p-4 bg-[#E8ECF1] rounded-lg border border-[#d0d7dd]">
                                 <input 
                                     type="checkbox" 
                                     required
-                                    class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                    class="h-4 w-4 text-[#4A5D73] focus:ring-[#4A5D73] border-gray-300 rounded"
                                 >
                                 <label class="ml-3 block text-sm font-medium text-gray-700">
                                     Confirmo que as informações estão corretas
@@ -190,7 +187,7 @@
                                 <button 
                                     type="submit" 
                                     name="botao"
-                                    class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-lg hover:shadow-xl"
+                                    class="w-full bg-gradient-to-r from-[#4A5D73] to-[#324151] hover:from-[#576D86] hover:to-[#3A4A5C] text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] focus:ring-2 focus:ring-[#4A5D73] focus:ring-offset-2 shadow-lg hover:shadow-xl"
                                 >
                                     <i class="fas fa-plus-circle mr-2"></i>
                                     Cadastrar Curso
@@ -214,7 +211,7 @@
                 <div class="lg:col-span-2">
                     <div class="glass-card rounded-2xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
                         <!-- Cabeçalho da Tabela -->
-                        <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-8 py-6">
+                        <div class="bg-gradient-to-r from-[#4A5D73] to-[#324151] px-8 py-6">
                             <h2 class="text-2xl font-bold text-white">Cursos Recentes</h2>
                         </div>
 
@@ -243,7 +240,7 @@
                                         if ($contar > 0) {
                                             while ($show = $result->FETCH(PDO::FETCH_OBJ)) {
                                     ?>
-                                    <tr class="hover:bg-purple-25 transition-colors duration-150 border-b border-gray-100">
+                                    <tr class="hover:bg-[#E8ECF1] transition-colors duration-150 border-b border-gray-100">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo $cont++; ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <img src="../img/cont/<?php echo $show->foto_contatos; ?>" alt="Imagem do curso" class="w-10 h-10 rounded-lg object-cover border border-gray-200">
@@ -257,12 +254,12 @@
                                             echo str_replace("Categoria: ", "", $dados[0]);
                                             ?>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-purple-600">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#4A5D73]">
                                             <?php echo $show->fone_contatos; ?>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex space-x-2">
-                                                <a href="home.php?acao=editar&id=<?php echo $show->id_contatos; ?>" class="text-gray-600 hover:text-purple-600 transition-colors duration-200 p-2 rounded hover:bg-purple-50">
+                                                <a href="home.php?acao=editar&id=<?php echo $show->id_contatos; ?>" class="text-gray-600 hover:text-[#4A5D73] transition-colors duration-200 p-2 rounded hover:bg-[#E8ECF1]">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <a href="conteudo/del-contato.php?idDel=<?php echo $show->id_contatos; ?>" onclick="return confirm('Deseja remover o curso?')" class="text-gray-600 hover:text-red-600 transition-colors duration-200 p-2 rounded hover:bg-red-50">
