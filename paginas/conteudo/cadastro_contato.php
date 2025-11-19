@@ -6,11 +6,41 @@
     <title>Cadastro de Cursos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .modern-input {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        .modern-input:focus {
+            background: white;
+            border-color: #8b5cf6;
+            box-shadow: 
+                0 0 0 3px rgba(139, 92, 246, 0.1),
+                0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="min-h-screen">
 
   <!-- Header Mais Destacado -->
-<div class="bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg">
+<div class="bg-gradient-to-r from-purple-600 to-purple-800 shadow-2xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-center items-center py-8">
             <h1 class="text-3xl font-bold text-white text-center">Cadastro de Cursos</h1>
@@ -25,10 +55,10 @@
 
                 <!-- Coluna Esquerda - Formulário Atualizado -->
                 <div class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+                    <div class="glass-card rounded-2xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
                         
                         <!-- Cabeçalho do Formulário -->
-                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+                        <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-8 py-6">
                             <h2 class="text-2xl font-bold text-white">Cadastrar curso</h2>
                         </div>
 
@@ -37,41 +67,41 @@
                             
                             <!-- Nome do Curso -->
                             <div>
-                                <label class="block text-lg font-semibold text-gray-800 mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                                     Nome do Curso
                                 </label>
                                 <input 
                                     type="text" 
                                     name="nome" 
                                     required
-                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400"
+                                    class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 placeholder-gray-500"
                                     placeholder="Digite o nome do curso"
                                 >
                             </div>
 
                             <!-- Carga Horária -->
                             <div>
-                                <label class="block text-lg font-semibold text-gray-800 mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                                     Carga Horária
                                 </label>
                                 <input 
                                     type="text" 
                                     name="carga_horaria" 
                                     required
-                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400"
+                                    class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 placeholder-gray-500"
                                     placeholder="Ex: 40 horas"
                                 >
                             </div>
 
                             <!-- Categoria -->
                             <div>
-                                <label class="block text-lg font-semibold text-gray-800 mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                                     Categoria
                                 </label>
                                 <select 
                                     name="categoria" 
                                     required
-                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 bg-white"
+                                    class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 appearance-none bg-white"
                                 >
                                     <option value="" class="text-gray-400">Selecione uma categoria</option>
                                     <option value="Tecnologia" class="text-gray-700">Tecnologia</option>
@@ -80,30 +110,33 @@
                                     <option value="Artes" class="text-gray-700">Artes</option>
                                     <option value="Idiomas" class="text-gray-700">Idiomas</option>
                                 </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
                             </div>
 
                             <!-- Descrição do Curso -->
                             <div>
-                                <label class="block text-lg font-semibold text-gray-800 mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                                     Descrição do Curso
                                 </label>
                                 <textarea 
                                     name="descricao" 
                                     rows="4"
-                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400 resize-none"
+                                    class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 placeholder-gray-500 resize-none"
                                     placeholder="Descreva o conteúdo do curso"
                                 ></textarea>
                             </div>
 
                             <!-- Nível do Curso -->
                             <div>
-                                <label class="block text-lg font-semibold text-gray-800 mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                                     Nível do Curso
                                 </label>
                                 <select 
                                     name="nivel" 
                                     required
-                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 bg-white"
+                                    class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 appearance-none bg-white"
                                 >
                                     <option value="" class="text-gray-400">Selecione o nível</option>
                                     <option value="Iniciante" class="text-gray-700">Iniciante</option>
@@ -114,38 +147,38 @@
 
                             <!-- Preço -->
                             <div>
-                                <label class="block text-lg font-semibold text-gray-800 mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                                     Preço (R$)
                                 </label>
                                 <input 
                                     type="number" 
                                     step="0.01" 
                                     name="preco"
-                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400"
+                                    class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 placeholder-gray-500"
                                     placeholder="0.00"
                                 >
                             </div>
 
                             <!-- Imagem do Curso -->
                             <div>
-                                <label class="block text-lg font-semibold text-gray-800 mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                                     Imagem do curso
                                 </label>
                                 <div class="flex items-center space-x-3">
                                     <input 
                                         type="file" 
                                         name="foto"
-                                        class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                                     >
                                 </div>
                             </div>
 
                             <!-- Checkbox de Confirmação -->
-                            <div class="flex items-center p-4 bg-blue-50 rounded-xl">
+                            <div class="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-100">
                                 <input 
                                     type="checkbox" 
                                     required
-                                    class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                                 >
                                 <label class="ml-3 block text-sm font-medium text-gray-700">
                                     Confirmo que as informações estão corretas
@@ -157,7 +190,7 @@
                                 <button 
                                     type="submit" 
                                     name="botao"
-                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 focus:ring-4 focus:ring-blue-300 shadow-lg hover:shadow-xl"
+                                    class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-lg hover:shadow-xl"
                                 >
                                     <i class="fas fa-plus-circle mr-2"></i>
                                     Cadastrar Curso
@@ -179,10 +212,10 @@
 
                 <!-- Coluna Direita - Tabela -->
                 <div class="lg:col-span-2">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="glass-card rounded-2xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
                         <!-- Cabeçalho da Tabela -->
-                        <div class="bg-gradient-to-r from-gray-600 to-gray-700 px-6 py-4 rounded-t-lg">
-                            <h2 class="text-lg font-semibold text-white">Cursos Recentes</h2>
+                        <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-8 py-6">
+                            <h2 class="text-2xl font-bold text-white">Cursos Recentes</h2>
                         </div>
 
                         <!-- Tabela -->
@@ -190,15 +223,15 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imagem</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Carga Horária</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">#</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Imagem</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Categoria</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Carga Horária</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
+                                <tbody class="bg-white divide-y divide-gray-100">
                                     <?php
                                     $select = "SELECT * FROM tb_contatos WHERE id_user = :id_user ORDER BY id_contatos DESC LIMIT 6";
                                     try {
@@ -210,29 +243,29 @@
                                         if ($contar > 0) {
                                             while ($show = $result->FETCH(PDO::FETCH_OBJ)) {
                                     ?>
-                                    <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo $cont++; ?></td>
+                                    <tr class="hover:bg-purple-25 transition-colors duration-150 border-b border-gray-100">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo $cont++; ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <img src="../img/cont/<?php echo $show->foto_contatos; ?>" alt="Imagem do curso" class="w-10 h-10 rounded-lg object-cover">
+                                            <img src="../img/cont/<?php echo $show->foto_contatos; ?>" alt="Imagem do curso" class="w-10 h-10 rounded-lg object-cover border border-gray-200">
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                                             <?php echo $show->nome_contatos; ?>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs font-medium text-gray-600 bg-gray-50 px-3 py-1 rounded-full">
                                             <?php 
                                             $dados = explode(" | ", $show->email_contatos);
                                             echo str_replace("Categoria: ", "", $dados[0]);
                                             ?>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-purple-600">
                                             <?php echo $show->fone_contatos; ?>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex space-x-2">
-                                                <a href="home.php?acao=editar&id=<?php echo $show->id_contatos; ?>" class="text-green-600 hover:text-green-900 transition-colors duration-200">
+                                                <a href="home.php?acao=editar&id=<?php echo $show->id_contatos; ?>" class="text-gray-600 hover:text-purple-600 transition-colors duration-200 p-2 rounded hover:bg-purple-50">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <a href="conteudo/del-contato.php?idDel=<?php echo $show->id_contatos; ?>" onclick="return confirm('Deseja remover o curso?')" class="text-red-600 hover:text-red-900 transition-colors duration-200">
+                                                <a href="conteudo/del-contato.php?idDel=<?php echo $show->id_contatos; ?>" onclick="return confirm('Deseja remover o curso?')" class="text-gray-600 hover:text-red-600 transition-colors duration-200 p-2 rounded hover:bg-red-50">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
                                             </div>
@@ -241,10 +274,10 @@
                                     <?php
                                             }
                                         } else {
-                                            echo '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Nenhum curso cadastrado</td></tr>';
+                                            echo '<tr><td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500"><i class="fas fa-book-open mr-2"></i>Nenhum curso cadastrado</td></tr>';
                                         }
                                     } catch (PDOException $e) {
-                                        echo '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-red-500">Erro: ' . $e->getMessage() . '</td></tr>';
+                                        echo '<tr><td colspan="6" class="px-6 py-8 text-center text-sm text-red-500"><i class="fas fa-exclamation-triangle mr-2"></i>Erro: ' . $e->getMessage() . '</td></tr>';
                                     }
                                     ?>
                                 </tbody>
