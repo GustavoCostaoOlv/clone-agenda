@@ -23,141 +23,143 @@
         <div class="px-4 py-6 sm:px-0">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <!-- Coluna Esquerda - Formulário -->
+                <!-- Coluna Esquerda - Formulário Atualizado -->
                 <div class="lg:col-span-1">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <!-- Cabeçalho do Card -->
-                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-lg">
-                            <h2 class="text-lg font-semibold text-white">Cadastrar curso</h2>
+                    <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+                        
+                        <!-- Cabeçalho do Formulário -->
+                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+                            <h2 class="text-2xl font-bold text-white">Cadastrar curso</h2>
                         </div>
 
-                        <!-- Formulário -->
-                        <form class="p-6 space-y-4" action="" method="post" enctype="multipart/form-data">
+                        <!-- Formulário Atualizado -->
+                        <form class="p-8 space-y-6" action="" method="post" enctype="multipart/form-data">
                             
                             <!-- Nome do Curso -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label class="block text-lg font-semibold text-gray-800 mb-3">
                                     Nome do Curso
                                 </label>
                                 <input 
                                     type="text" 
                                     name="nome" 
                                     required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400"
                                     placeholder="Digite o nome do curso"
                                 >
                             </div>
 
                             <!-- Carga Horária -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label class="block text-lg font-semibold text-gray-800 mb-3">
                                     Carga Horária
                                 </label>
                                 <input 
                                     type="text" 
                                     name="carga_horaria" 
                                     required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400"
                                     placeholder="Ex: 40 horas"
                                 >
                             </div>
 
                             <!-- Categoria -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label class="block text-lg font-semibold text-gray-800 mb-3">
                                     Categoria
                                 </label>
                                 <select 
                                     name="categoria" 
                                     required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 bg-white"
                                 >
-                                    <option value="">Selecione uma categoria</option>
-                                    <option value="Tecnologia">Tecnologia</option>
-                                    <option value="Negócios">Negócios</option>
-                                    <option value="Saúde">Saúde</option>
-                                    <option value="Artes">Artes</option>
-                                    <option value="Idiomas">Idiomas</option>
+                                    <option value="" class="text-gray-400">Selecione uma categoria</option>
+                                    <option value="Tecnologia" class="text-gray-700">Tecnologia</option>
+                                    <option value="Negócios" class="text-gray-700">Negócios</option>
+                                    <option value="Saúde" class="text-gray-700">Saúde</option>
+                                    <option value="Artes" class="text-gray-700">Artes</option>
+                                    <option value="Idiomas" class="text-gray-700">Idiomas</option>
                                 </select>
                             </div>
 
-                            <!-- Descrição -->
+                            <!-- Descrição do Curso -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label class="block text-lg font-semibold text-gray-800 mb-3">
                                     Descrição do Curso
                                 </label>
                                 <textarea 
                                     name="descricao" 
-                                    rows="3"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    rows="4"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400 resize-none"
                                     placeholder="Descreva o conteúdo do curso"
                                 ></textarea>
                             </div>
 
-                            <!-- Nível -->
+                            <!-- Nível do Curso -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label class="block text-lg font-semibold text-gray-800 mb-3">
                                     Nível do Curso
                                 </label>
                                 <select 
                                     name="nivel" 
                                     required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 bg-white"
                                 >
-                                    <option value="">Selecione o nível</option>
-                                    <option value="Iniciante">Iniciante</option>
-                                    <option value="Intermediário">Intermediário</option>
-                                    <option value="Avançado">Avançado</option>
+                                    <option value="" class="text-gray-400">Selecione o nível</option>
+                                    <option value="Iniciante" class="text-gray-700">Iniciante</option>
+                                    <option value="Intermediário" class="text-gray-700">Intermediário</option>
+                                    <option value="Avançado" class="text-gray-700">Avançado</option>
                                 </select>
                             </div>
 
                             <!-- Preço -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label class="block text-lg font-semibold text-gray-800 mb-3">
                                     Preço (R$)
                                 </label>
                                 <input 
                                     type="number" 
                                     step="0.01" 
                                     name="preco"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400"
                                     placeholder="0.00"
                                 >
                             </div>
 
-                            <!-- Imagem -->
+                            <!-- Imagem do Curso -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label class="block text-lg font-semibold text-gray-800 mb-3">
                                     Imagem do curso
                                 </label>
-                                <div class="flex items-center space-x-2">
+                                <div class="flex items-center space-x-3">
                                     <input 
                                         type="file" 
                                         name="foto"
-                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                     >
                                 </div>
                             </div>
 
-                            <!-- Checkbox -->
-                            <div class="flex items-center">
+                            <!-- Checkbox de Confirmação -->
+                            <div class="flex items-center p-4 bg-blue-50 rounded-xl">
                                 <input 
                                     type="checkbox" 
                                     required
-                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 >
-                                <label class="ml-2 block text-sm text-gray-700">
+                                <label class="ml-3 block text-sm font-medium text-gray-700">
                                     Confirmo que as informações estão corretas
                                 </label>
                             </div>
 
-                            <!-- Botão -->
-                            <div class="pt-4">
+                            <!-- Botão de Cadastro -->
+                            <div class="pt-6">
                                 <button 
                                     type="submit" 
                                     name="botao"
-                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:ring-4 focus:ring-blue-300"
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 focus:ring-4 focus:ring-blue-300 shadow-lg hover:shadow-xl"
                                 >
+                                    <i class="fas fa-plus-circle mr-2"></i>
                                     Cadastrar Curso
                                 </button>
                             </div>
@@ -165,11 +167,11 @@
                             <input type="hidden" name="id_user" value="<?php echo $id_user ?>">
                         </form>
 
-                        <!-- PHP Code (mantenha o mesmo) -->
+                        <!-- PHP Code (MANTENHA SEU PHP ORIGINAL AQUI) -->
                         <?php
                         include('../config/conexao.php');
                         if (isset($_POST['botao'])) {
-                            // ... seu código PHP atual aqui ...
+                            // SEU CÓDIGO PHP ORIGINAL AQUI
                         }
                         ?>
                     </div>
