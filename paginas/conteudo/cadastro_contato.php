@@ -5,9 +5,8 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Cadastro de Contatos</h1>
+            <h1>Cadastro de Cursos</h1>
           </div>
-          
         </div>
       </div><!-- /.container-fluid -->
     </section>
@@ -21,33 +20,59 @@
             <!-- general form elements -->
             <div class="card card-primary">
               <div class="card-header">
-                <h3 class="card-title">Cadastrar contato</h3>
+                <h3 class="card-title">Cadastrar curso</h3>
               </div>
               <!-- /.card-header -->
               <!-- form start -->
               <form role="form" action="" method="post" enctype="multipart/form-data">
                 <div class="card-body">
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Nome</label>
-                    <input type="text" class="form-control" name="nome" id="nome" required placeholder="Digite o nome de contato">
+                    <label for="nome">Nome do Curso</label>
+                    <input type="text" class="form-control" name="nome" id="nome" required placeholder="Digite o nome do curso">
                   </div>
                   <div class="form-group">
-                    <label for="exampleInputPassword1">Telefone</label>
-                    <input type="text" class="form-control" name="telefone" id="telefone" required placeholder="(00) 00000-0000">
+                    <label for="carga_horaria">Carga Horária</label>
+                    <input type="text" class="form-control" name="carga_horaria" id="carga_horaria" required placeholder="Ex: 40 horas">
                   </div>
                   <div class="form-group">
-                    <label for="exampleInputEmail1">Endereço de E-mail</label>
-                    <input type="email" class="form-control" name="email" id="email" required placeholder="Digite um e-mail">
+                    <label for="categoria">Categoria</label>
+                    <select class="form-control" name="categoria" id="categoria" required>
+                      <option value="">Selecione uma categoria</option>
+                      <option value="Tecnologia">Tecnologia</option>
+                      <option value="Negócios">Negócios</option>
+                      <option value="Saúde">Saúde</option>
+                      <option value="Artes">Artes</option>
+                      <option value="Idiomas">Idiomas</option>
+                    </select>
                   </div>
                   
+                <div class="form-group">
+                  <label for="descricao">Descrição do Curso</label>
+                  <textarea class="form-control" name="descricao" id="descricao" rows="3" placeholder="Descreva o conteúdo do curso"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="nivel">Nível do Curso</label>
+                  <select class="form-control" name="nivel" id="nivel" required>
+                    <option value="">Selecione o nível</option>
+                    <option value="Iniciante">Iniciante</option>
+                    <option value="Intermediário">Intermediário</option>
+                    <option value="Avançado">Avançado</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="preco">Preço (R$)</label>
+                  <input type="number" step="0.01" class="form-control" name="preco" id="preco" placeholder="0.00">
+                </div>
+
                   <div class="form-group">
-                    <label for="exampleInputFile">Foto do contato</label>
+                    <label for="foto">Imagem do curso</label>
                     <div class="input-group">
                       <div class="custom-file">
                         <input type="file" class="custom-file-input" name="foto" id="foto">
-                        <label class="custom-file-label" for="exampleInputFile">Arquivo de imagem</label>
+                        <label class="custom-file-label" for="foto">Arquivo de imagem</label>
                       </div>
-                      
                     </div>
                   </div>
                   <div class="form-group">
@@ -59,13 +84,13 @@
                   </div>
                   <div class="form-check">
                     <input type="checkbox" class="form-check-input" id="exampleCheck1" required>
-                    <label class="form-check-label" for="exampleCheck1">Autorizo o cadastro do meu contato</label>
+                    <label class="form-check-label" for="exampleCheck1">Confirmo que as informações estão corretas</label>
                   </div>
                 </div>
                 <!-- /.card-body -->
 
                 <div class="card-footer">
-                  <button type="submit" name="botao" class="btn btn-primary">Cadastrar Contato</button>
+                  <button type="submit" name="botao" class="btn btn-primary">Cadastrar Curso</button>
                 </div>
               </form>
               <?php
@@ -76,10 +101,15 @@
                 if (isset($_POST['botao'])) {
                     // Recupera os valores do formulário
                     $nome = $_POST['nome'];
-                    $telefone = $_POST['telefone'];
-                    $email = $_POST['email'];
+                    $carga_horaria = $_POST['carga_horaria'];
+                    $categoria = $_POST['categoria'];
                     $id_usuario = $_POST['id_user'];
-                
+                    $descricao = $_POST['descricao'];
+                    $nivel = $_POST['nivel'];
+                    $preco = $_POST['preco'];
+
+                    // Combine as informações extras em um campo (já que não temos campos extras no banco)
+                    $info_completa = "Categoria: $categoria | Nível: $nivel | Preço: R$ $preco | Descrição: $descricao";
                     // Define os formatos de imagem permitidos
                     $formatP = array("png", "jpg", "jpeg", "JPG", "gif");
                 
@@ -107,24 +137,26 @@
                         } else {
                             // Se o formato da imagem não for permitido, exibe mensagem de erro e define o avatar padrão
                             echo "Formato Inválido";
-                            $foto = 'avatar-padrao.png';
+                            $foto = 'avatar_padrao.png';
                         }
                     } else {
                         // Se não houver imagem enviada, define o avatar padrão
                         $foto = 'avatar_padrao.png';
                     }
                   
-                    // Prepara a consulta SQL para inserir os dados no banco de dados
-                    $cadastro = "INSERT INTO tb_contatos (nome_contatos, fone_contatos, email_contatos, foto_contatos, id_user) VALUES (:nome, :telefone, :email, :foto, :id_user)";
+                    // Prepara a consulta SQL para inserir os dados no banco de dados EXISTENTE
+                    // Mapeamento: nome_contatos = nome do curso, fone_contatos = carga horária, email_contatos = categoria
+                    $cadastro = "INSERT INTO tb_contatos (nome_contatos, fone_contatos, email_contatos, foto_contatos, id_user) 
+                                VALUES (:nome, :carga_horaria, :categoria, :foto, :id_user)";
                   
                     try {
                         // Prepara a consulta SQL com os parâmetros
                         $result = $conect->prepare($cadastro);
                         $result->bindParam(':nome', $nome, PDO::PARAM_STR);
-                        $result->bindParam(':telefone', $telefone, PDO::PARAM_STR);
-                        $result->bindParam(':email', $email, PDO::PARAM_STR);
+                        $result->bindParam(':carga_horaria', $carga_horaria, PDO::PARAM_STR);
+                        $result->bindParam(':categoria', $info_completa, PDO::PARAM_STR);
                         $result->bindParam(':foto', $foto, PDO::PARAM_STR);
-                        $result->bindParam(':id_user', $id_usuario, PDO::PARAM_INT); // Adicionando o id_usuario
+                        $result->bindParam(':id_user', $id_usuario, PDO::PARAM_INT);
                     
                         // Executa a consulta SQL
                         $result->execute();
@@ -137,7 +169,7 @@
                                     <div class="alert alert-success alert-dismissible">
                                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                                     <h5><i class="icon fas fa-check"></i> OK!</h5>
-                                    Dados inseridos com sucesso !!!
+                                    Curso cadastrado com sucesso !!!
                                   </div>
                                 </div>';
                             header("Refresh: 5, home.php");
@@ -147,7 +179,7 @@
                                   <div class="alert alert-danger alert-dismissible">
                                   <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                                   <h5><i class="icon fas fa-check"></i> Erro!</h5>
-                                  Dados não inseridos !!!
+                                  Curso não cadastrado !!!
                                 </div>
                               </div>';
                             header("Refresh: 5, home.php");
@@ -159,12 +191,12 @@
                   }
               ?>
             </div>
-</div>
+          </div>
             
-            <div class="col-md-8">
+          <div class="col-md-8">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Contatos Recentes</h3>
+                <h3 class="card-title">Cursos Recentes</h3>
               </div>
               <!-- /.card-header -->
               <div class="card-body p-0">
@@ -172,16 +204,17 @@
                   <thead>
                     <tr>
                       <th style="width: 10px">#</th>
-                      <th>Foto</th>
+                      <th>Imagem</th>
                       <th>Nome</th>
-                      <th>Telefone</th>
-                      <th>E-mail</th>
+                      <th>Categoria</th>
+                      <th>Carga Horária</th>
                       <th style="width: 40px">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                   <?php
-                  // Consulta SQL para selecionar os contatos do usuário atual
+                  // Consulta SQL para selecionar os cursos do usuário atual
+                  // Usando a tabela tb_contatos existente
                   $select = "SELECT * FROM tb_contatos WHERE id_user = :id_user ORDER BY id_contatos DESC LIMIT 6";
                   
                   try {
@@ -201,19 +234,24 @@
                   ?>  
                                       
                      <tr>
-                      
                     <td><?php echo $cont++; ?></td>
-                    <td> <img src="../img/cont/<?php echo $show->foto_contatos; ?>" alt="Foto do contato" style="width:40px; height:40px; object-fit:cover; border-radius:50%;"></td>
+                    <td> <img src="../img/cont/<?php echo $show->foto_contatos; ?>" alt="Imagem do curso" style="width:40px; height:40px; object-fit:cover; border-radius:5px;"></td>
                     <td><?php echo $show->nome_contatos; ?></td>
-                    <td><?php echo $show->fone_contatos; ?></td>
-                    <td><?php echo $show->email_contatos; ?></td>
+                    <td>
+                      <?php 
+                      // Extrai apenas a categoria principal
+                      $dados = explode(" | ", $show->email_contatos);
+                      echo str_replace("Categoria: ", "", $dados[0]); // Mostra "Tecnologia"
+                      ?>
+                  </td>
+                    <td><?php echo $show->fone_contatos; ?></td> <!-- Carga horária está no campo fone_contatos -->
                     <td>
                         <div class="btn-group">
-                            <!-- Botão para editar o contato -->
-                            <a href="home.php?acao=editar&id=<?php echo $show->id_contatos; ?>" class="btn btn-success" title="Editar Contato"><i class="fas fa-user-edit"></i></a>
+                            <!-- Botão para editar o curso -->
+                            <a href="home.php?acao=editar&id=<?php echo $show->id_contatos; ?>" class="btn btn-success" title="Editar Curso"><i class="fas fa-edit"></i></a>
 
-                            <!-- Botão para remover o contato -->
-                            <a href="conteudo/del-contato.php?idDel=<?php echo $show->id_contatos; ?>" onclick="return confirm('Deseja remover o contato?')" class="btn btn-danger" title="Remover Contato"><i class="fas fa-user-times"></i></a>
+                            <!-- Botão para remover o curso -->
+                            <a href="conteudo/del-contato.php?idDel=<?php echo $show->id_contatos; ?>" onclick="return confirm('Deseja remover o curso?')" class="btn btn-danger" title="Remover Curso"><i class="fas fa-trash"></i></a>
                         </div>
                     </td>
                 </tr>
@@ -222,24 +260,20 @@
                         } else {
                             // Se a consulta não retornar resultados, exibe uma mensagem
                             echo '<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">×</button>
-                            <strong>Não há contatos!</strong></div>';
+                            <strong>Não há cursos cadastrados!</strong></div>';
                         }
                     } catch (PDOException $e) {
                         // Exibe a mensagem de erro de PDO
                         echo '<strong>ERRO DE PDO= </strong>' . $e->getMessage();
                     }
                     ?>
-                                       
                   </tbody>
                 </table>
               </div>
               <!-- /.card-body -->
             </div>
             <!-- /.card -->
-            </div>
-
           </div>
-          <!--/.col (right) -->
         </div>
         <!-- /.row -->
       </div><!-- /.container-fluid -->
@@ -247,4 +281,3 @@
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
-                    

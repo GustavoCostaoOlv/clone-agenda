@@ -3,7 +3,7 @@
 if (!defined('DB_CONFIG')) {
     define('DB_CONFIG', [
         'host' => 'localhost',
-        'dbname' => 'cadastro_cursos',
+        'dbname' => 'new_agenda_2024',
         'user' => 'root',
         'pass' => 'Gus2090@'
     ]);
