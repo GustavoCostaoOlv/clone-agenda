@@ -1,8 +1,8 @@
 <?php
 include_once('../includes/header.php');
 
-// Sanitização de entrada
-$acao = filter_var(isset($_GET['acao']) ? $_GET['acao'] : 'bemvindo', FILTER_SANITIZE_STRING);
+// Sanitização de entrada CORRIGIDA
+$acao = isset($_GET['acao']) ? htmlspecialchars($_GET['acao']) : 'bemvindo';
 
 // Definir caminhos em variáveis
 $paginas = [
@@ -19,3 +19,4 @@ $pagina_incluir = isset($paginas[$acao]) ? $paginas[$acao] : $paginas['bemvindo'
 include_once($pagina_incluir);
 
 include_once('../includes/footer.php');
+?>
