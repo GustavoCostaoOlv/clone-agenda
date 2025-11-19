@@ -49,7 +49,7 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
   <div class="text-center mb-8">
     <h1 class="text-4xl font-bold text-white">
       <a href="#" class="hover:text-blue-200 transition-colors">
-        <span class="text-blue-200">Cursos</span> <span class="text-white">Online</span> <span class="text-blue-200">1.0</span>
+        <span class="text-blue-200">Seus Cursos</span> <span class="text-white">Online</span> <span class="text-blue-200"></span>
       </a>
     </h1>
     <p class="text-blue-100 mt-2">Seu Planejamento de Carreira Virtual</p>
@@ -60,9 +60,9 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
     <div class="p-8">
       <div class="text-center mb-6">
         <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-calendar-alt text-blue-600 text-2xl"></i>
+        <i class="fas fa-graduation-cap text-purple-600 text-2xl"></i>
         </div>
-        <h2 class="text-2xl font-bold text-gray-800">Bem-vindo de volta</h2>
+        <h2 class="text-2xl font-bold text-gray-800">Seja Bem-vindo</h2>
         <p class="text-gray-600 mt-2">Para acessar entre com E-mail e Senha</p>
       </div>
 
