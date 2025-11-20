@@ -1,3 +1,85 @@
+<?php
+include_once('../config/conexao.php');
+
+// Verificar se usuário está logado
+if (!isset($_SESSION['loginUser']) || !isset($_SESSION['senhaUser'])) {
+    header("Location: ../index.php?acao=negado");
+    exit;
+}
+
+$id_user = $_SESSION['senhaUser'];
+
+// Processar cadastro do curso
+if (isset($_POST['botao'])) {
+    $nome_curso = $_POST['nome'];
+    $carga_horaria = $_POST['carga_horaria'];
+    $categoria = $_POST['categoria'];
+    $descricao = $_POST['descricao'];
+    $nivel = $_POST['nivel'];
+    $preco = $_POST['preco'];
+
+    // Upload da imagem
+    if (!empty($_FILES['foto']['name'])) {
+        $formatosPermitidos = array("png", "jpg", "jpeg", "gif");
+        $extensao = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
+
+        if (in_array(strtolower($extensao), $formatosPermitidos)) {
+            $pasta = "../img/cursos/";
+            $temporario = $_FILES['foto']['tmp_name'];
+            $novoNome = uniqid() . ".$extensao";
+
+            if (move_uploaded_file($temporario, $pasta . $novoNome)) {
+                $foto_curso = $novoNome;
+            } else {
+                echo '<script>alert("Erro no upload da imagem!");</script>';
+                $foto_curso = 'curso-padrao.jpg';
+            }
+        } else {
+            echo '<script>alert("Formato de imagem não permitido!");</script>';
+            $foto_curso = 'curso-padrao.jpg';
+        }
+    } else {
+        $foto_curso = 'curso-padrao.jpg';
+    }
+
+    // Inserir no banco de dados
+    $cadastro = "INSERT INTO tb_cursos (nome_curso, carga_horaria, categoria, descricao, nivel, preco, imagem_curso, id_user) 
+                VALUES (:nome, :carga, :categoria, :descricao, :nivel, :preco, :foto, :id_user)";
+
+    try {
+        $result = $conect->prepare($cadastro);
+        $result->bindParam(':nome', $nome_curso, PDO::PARAM_STR);
+        $result->bindParam(':carga', $carga_horaria, PDO::PARAM_STR);
+        $result->bindParam(':categoria', $categoria, PDO::PARAM_STR);
+        $result->bindParam(':descricao', $descricao, PDO::PARAM_STR);
+        $result->bindParam(':nivel', $nivel, PDO::PARAM_STR);
+        $result->bindParam(':preco', $preco, PDO::PARAM_STR);
+        $result->bindParam(':foto', $foto_curso, PDO::PARAM_STR);
+        $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
+        $result->execute();
+        
+        if ($result->rowCount() > 0) {
+            echo '<script>alert("Curso cadastrado com sucesso!");</script>';
+            echo '<script>window.location.href = "home.php";</script>';
+        }
+    } catch (PDOException $e) {
+        echo '<script>alert("Erro ao cadastrar curso: ' . $e->getMessage() . '");</script>';
+    }
+}
+
+// Buscar cursos do usuário
+$cursos = [];
+try {
+    $select = "SELECT * FROM tb_cursos WHERE id_user = :id_user ORDER BY id_curso DESC";
+    $result = $conect->prepare($select);
+    $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
+    $result->execute();
+    $cursos = $result->fetchAll(PDO::FETCH_OBJ);
+} catch (PDOException $e) {
+    echo '<script>alert("Erro ao buscar cursos: ' . $e->getMessage() . '");</script>';
+}
+?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -53,7 +135,7 @@
         <div class="px-4 py-6 sm:px-0">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <!-- Coluna Esquerda - Formulário Atualizado -->
+                <!-- Coluna Esquerda - Formulário de Cursos -->
                 <div class="lg:col-span-1">
                     <div class="glass-card rounded-2xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
                         
@@ -62,7 +144,7 @@
                             <h2 class="text-2xl font-bold text-white">Cadastrar curso</h2>
                         </div>
 
-                        <!-- Formulário Atualizado -->
+                        <!-- Formulário -->
                         <form class="p-8 space-y-6" action="" method="post" enctype="multipart/form-data">
                             
                             <!-- Nome do Curso -->
@@ -109,6 +191,8 @@
                                     <option value="Saúde" class="text-gray-700">Saúde</option>
                                     <option value="Artes" class="text-gray-700">Artes</option>
                                     <option value="Idiomas" class="text-gray-700">Idiomas</option>
+                                    <option value="Marketing" class="text-gray-700">Marketing</option>
+                                    <option value="Desenvolvimento Pessoal" class="text-gray-700">Desenvolvimento Pessoal</option>
                                 </select>
                             </div>
 
@@ -153,6 +237,7 @@
                                     name="preco"
                                     class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 placeholder-gray-500"
                                     placeholder="0.00"
+                                    value="0.00"
                                 >
                             </div>
 
@@ -165,6 +250,7 @@
                                     <input 
                                         type="file" 
                                         name="foto"
+                                        accept="image/png, image/jpg, image/jpeg, image/gif"
                                         class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#E8ECF1] file:text-[#4A5D73] hover:file:bg-[#dfe5ea]"
                                     >
                                 </div>
@@ -193,21 +279,11 @@
                                     Cadastrar Curso
                                 </button>
                             </div>
-
-                            <input type="hidden" name="id_user" value="<?php echo $id_user ?>">
                         </form>
-
-                        <!-- PHP Code (MANTENHA SEU PHP ORIGINAL AQUI) -->
-                        <?php
-                        include('../config/conexao.php');
-                        if (isset($_POST['botao'])) {
-                            // SEU CÓDIGO PHP ORIGINAL AQUI
-                        }
-                        ?>
                     </div>
                 </div>
 
-                <!-- Coluna Direita - Tabela -->
+                <!-- Coluna Direita - Tabela de Cursos -->
                 <div class="lg:col-span-2">
                     <div class="glass-card rounded-2xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
                         <!-- Cabeçalho da Tabela -->
@@ -225,56 +301,59 @@
                                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome</th>
                                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Categoria</th>
                                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Carga Horária</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nível</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Preço</th>
                                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-100">
                                     <?php
-                                    $select = "SELECT * FROM tb_contatos WHERE id_user = :id_user ORDER BY id_contatos DESC LIMIT 6";
-                                    try {
-                                        $result = $conect->prepare($select);
-                                        $cont = 1; 
-                                        $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
-                                        $result->execute();
-                                        $contar = $result->rowCount();
-                                        if ($contar > 0) {
-                                            while ($show = $result->FETCH(PDO::FETCH_OBJ)) {
+                                    $cont = 1;
+                                    if (count($cursos) > 0) {
+                                        foreach ($cursos as $curso) {
                                     ?>
                                     <tr class="hover:bg-[#E8ECF1] transition-colors duration-150 border-b border-gray-100">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo $cont++; ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <img src="../img/cont/<?php echo $show->foto_contatos; ?>" alt="Imagem do curso" class="w-10 h-10 rounded-lg object-cover border border-gray-200">
+                                            <img src="../img/cursos/<?php echo $curso->imagem_curso; ?>" alt="Imagem do curso" class="w-12 h-12 rounded-lg object-cover border border-gray-200">
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                            <?php echo $show->nome_contatos; ?>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-semibold text-gray-900"><?php echo $curso->nome_curso; ?></div>
+                                            <div class="text-xs text-gray-500 mt-1"><?php echo substr($curso->descricao, 0, 50) . '...'; ?></div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs font-medium text-gray-600 bg-gray-50 px-3 py-1 rounded-full">
-                                            <?php 
-                                            $dados = explode(" | ", $show->email_contatos);
-                                            echo str_replace("Categoria: ", "", $dados[0]);
-                                            ?>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                <?php echo $curso->categoria; ?>
+                                            </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#4A5D73]">
-                                            <?php echo $show->fone_contatos; ?>
+                                            <?php echo $curso->carga_horaria; ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                                <?php echo $curso->nivel == 'Iniciante' ? 'bg-green-100 text-green-800' : 
+                                                       ($curso->nivel == 'Intermediário' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'); ?>">
+                                                <?php echo $curso->nivel; ?>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                            R$ <?php echo number_format($curso->preco, 2, ',', '.'); ?>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex space-x-2">
-                                                <a href="home.php?acao=editar&id=<?php echo $show->id_contatos; ?>" class="text-gray-600 hover:text-[#4A5D73] transition-colors duration-200 p-2 rounded hover:bg-[#E8ECF1]">
+                                                <a href="editar-curso.php?id=<?php echo $curso->id_curso; ?>" class="text-gray-600 hover:text-[#4A5D73] transition-colors duration-200 p-2 rounded hover:bg-[#E8ECF1]">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <a href="conteudo/del-contato.php?idDel=<?php echo $show->id_contatos; ?>" onclick="return confirm('Deseja remover o curso?')" class="text-gray-600 hover:text-red-600 transition-colors duration-200 p-2 rounded hover:bg-red-50">
+                                                <a href="deletar-curso.php?id=<?php echo $curso->id_curso; ?>" onclick="return confirm('Deseja remover este curso?')" class="text-gray-600 hover:text-red-600 transition-colors duration-200 p-2 rounded hover:bg-red-50">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
                                             </div>
                                         </td>
                                     </tr>
                                     <?php
-                                            }
-                                        } else {
-                                            echo '<tr><td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500"><i class="fas fa-book-open mr-2"></i>Nenhum curso cadastrado</td></tr>';
                                         }
-                                    } catch (PDOException $e) {
-                                        echo '<tr><td colspan="6" class="px-6 py-8 text-center text-sm text-red-500"><i class="fas fa-exclamation-triangle mr-2"></i>Erro: ' . $e->getMessage() . '</td></tr>';
+                                    } else {
+                                        echo '<tr><td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500"><i class="fas fa-book-open mr-2"></i>Nenhum curso cadastrado</td></tr>';
                                     }
                                     ?>
                                 </tbody>
