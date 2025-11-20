@@ -40,12 +40,50 @@ if (isset($_SESSION['loginUser']) && isset($_SESSION['senhaUser'])) {
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
   
-  <style>
+ <style>
     body {
       font-family: 'Source Sans Pro', sans-serif;
-      background: linear-gradient(135deg, #4A5D73 0%, #324151 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #4A5D73 50%, #2c3e50 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      min-height: 100vh;
     }
-  </style>
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50% }
+      50% { background-position: 100% 50% }
+      100% { background-position: 0% 50% }
+    }
+    
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    .preview-container {
+      display: none;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .preview-image {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #E8ECF1;
+      margin: 0 auto;
+    }
+</style>
 </head>
 
 <body class="min-h-screen flex items-center justify-center p-4">
