@@ -1,15 +1,28 @@
 <?php
 include_once('../config/conexao.php');
 
+// DEBUG - ADICIONE ESTAS LINHAS TEMPORARIAMENTE
+error_log("=== INICIANDO CADASTRO CURSO ===");
+error_log("SESSION: " . print_r($_SESSION, true));
+error_log("POST: " . print_r($_POST, true));
+error_log("FILES: " . print_r($_FILES, true));
+
 // Verificar se usuário está logado
 if (!isset($_SESSION['loginUser']) || !isset($_SESSION['senhaUser'])) {
     header("Location: ../index.php?acao=negado");
     exit;
 }
 
-// CORREÇÃO: Usar o ID do usuário correto da sessão
-// Se você tem um campo de ID do usuário na sessão, use-o
-$id_user = $_SESSION['id_user'] ?? $_SESSION['senhaUser']; // Ajuste conforme sua estrutura
+// CORREÇÃO FINAL: ID DO USUÁRIO - VERIFIQUE QUAL CAMPO EXISTE NA SUA SESSÃO
+if (isset($_SESSION['id_user'])) {
+    $id_user = $_SESSION['id_user'];
+} elseif (isset($_SESSION['id'])) {
+    $id_user = $_SESSION['id'];
+} else {
+    // Se não encontrar ID, use um valor padrão para teste
+    $id_user = 1;
+    error_log("ID do usuário não encontrado na sessão. Usando valor padrão: 1");
+}
 
 // Função para verificar se imagem existe
 function getImagemCurso($imagem_curso) {
@@ -22,60 +35,81 @@ function getImagemCurso($imagem_curso) {
     }
 }
 
-// Processar cadastro do curso
+// CORREÇÃO 3: PROCESSAR CADASTRO DO CURSO - VERIFICAÇÃO MELHORADA
 if (isset($_POST['botao'])) {
-    $nome_curso = $_POST['nome'];
-    $carga_horaria = $_POST['carga_horaria'];
-    $categoria = $_POST['categoria'];
-    $descricao = $_POST['descricao'];
-    $nivel = $_POST['nivel'];
-    $preco = $_POST['preco'];
+    // Sanitizar e validar dados
+    $nome_curso = trim($_POST['nome'] ?? '');
+    $carga_horaria = trim($_POST['carga_horaria'] ?? '');
+    $categoria = trim($_POST['categoria'] ?? '');
+    $descricao = trim($_POST['descricao'] ?? '');
+    $nivel = trim($_POST['nivel'] ?? '');
+    $preco = floatval($_POST['preco'] ?? 0);
 
-    // Upload da imagem
-    if (!empty($_FILES['foto']['name']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-        $formatosPermitidos = array("png", "jpg", "jpeg", "gif");
-        $extensao = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
+      error_log("Dados processados:");
+    error_log("Nome: $nome_curso");
+    error_log("Carga: $carga_horaria");
+    error_log("Categoria: $categoria");
+    error_log("Nível: $nivel");
+    error_log("Preço: $preco");
 
-        if (in_array(strtolower($extensao), $formatosPermitidos)) {
-            $pasta = "../img/cursos/";
-            $temporario = $_FILES['foto']['tmp_name'];
-            $novoNome = uniqid() . ".$extensao";
-
-            if (move_uploaded_file($temporario, $pasta . $novoNome)) {
-                $foto_curso = $novoNome;
-            } else {
-                echo '<script>mostrarMensagem("Erro no upload da imagem! Usando imagem padrão.", "warning");</script>';
-                $foto_curso = 'curso-padrao.jpg';
-            }
-        } else {
-            echo '<script>mostrarMensagem("Formato de imagem não permitido! Usando imagem padrão.", "warning");</script>';
-            $foto_curso = 'curso-padrao.jpg';
-        }
+    // Validar campos obrigatórios
+    if (empty($nome_curso) || empty($carga_horaria) || empty($categoria) || empty($descricao) || empty($nivel)) {
+        echo '<script>mostrarMensagem("Preencha todos os campos obrigatórios!", "error");</script>';
     } else {
-        $foto_curso = 'curso-padrao.jpg';
-    }
-
-    // Inserir no banco de dados
-    $cadastro = "INSERT INTO tb_cursos (nome_curso, carga_horaria, categoria, descricao, nivel, preco, imagem_curso, id_user) 
-                VALUES (:nome, :carga, :categoria, :descricao, :nivel, :preco, :foto, :id_user)";
-
-    try {
-        $result = $conect->prepare($cadastro);
-        $result->bindParam(':nome', $nome_curso, PDO::PARAM_STR);
-        $result->bindParam(':carga', $carga_horaria, PDO::PARAM_STR);
-        $result->bindParam(':categoria', $categoria, PDO::PARAM_STR);
-        $result->bindParam(':descricao', $descricao, PDO::PARAM_STR);
-        $result->bindParam(':nivel', $nivel, PDO::PARAM_STR);
-        $result->bindParam(':preco', $preco, PDO::PARAM_STR);
-        $result->bindParam(':foto', $foto_curso, PDO::PARAM_STR);
-        $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
-        $result->execute();
+        // Upload da imagem
+        $foto_curso = 'curso-padrao.jpg'; // Valor padrão
         
-        if ($result->rowCount() > 0) {
-            echo '<script>mostrarMensagem("Curso cadastrado com sucesso!", "success");</script>';
+        if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+            $formatosPermitidos = array("png", "jpg", "jpeg", "gif");
+            $extensao = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
+
+            if (in_array($extensao, $formatosPermitidos)) {
+                $pasta = "../img/cursos/";
+                
+                // Verificar se pasta existe, se não, criar
+                if (!is_dir($pasta)) {
+                    mkdir($pasta, 0777, true);
+                }
+                
+                $temporario = $_FILES['foto']['tmp_name'];
+                $novoNome = uniqid() . ".$extensao";
+
+                if (move_uploaded_file($temporario, $pasta . $novoNome)) {
+                    $foto_curso = $novoNome;
+                    echo '<script>mostrarMensagem("Imagem enviada com sucesso!", "success");</script>';
+                } else {
+                    echo '<script>mostrarMensagem("Erro ao salvar a imagem. Usando imagem padrão.", "warning");</script>';
+                }
+            } else {
+                echo '<script>mostrarMensagem("Formato de imagem não permitido! Use PNG, JPG, JPEG ou GIF.", "warning");</script>';
+            }
         }
-    } catch (PDOException $e) {
-        echo '<script>mostrarMensagem("Erro ao cadastrar curso: ' . $e->getMessage() . '", "error");</script>';
+
+        // CORREÇÃO: Inserir no banco de dados com tratamento de erro melhorado
+        try {
+            $cadastro = "INSERT INTO tb_cursos (nome_curso, carga_horaria, categoria, descricao, nivel, preco, imagem_curso, id_user) 
+                        VALUES (:nome, :carga, :categoria, :descricao, :nivel, :preco, :foto, :id_user)";
+
+            $result = $conect->prepare($cadastro);
+            $result->bindParam(':nome', $nome_curso, PDO::PARAM_STR);
+            $result->bindParam(':carga', $carga_horaria, PDO::PARAM_STR);
+            $result->bindParam(':categoria', $categoria, PDO::PARAM_STR);
+            $result->bindParam(':descricao', $descricao, PDO::PARAM_STR);
+            $result->bindParam(':nivel', $nivel, PDO::PARAM_STR);
+            $result->bindParam(':preco', $preco);
+            $result->bindParam(':foto', $foto_curso, PDO::PARAM_STR);
+            $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
+            
+            if ($result->execute()) {
+                echo '<script>mostrarMensagem("Curso cadastrado com sucesso!", "success");</script>';
+                // Limpar formulário após sucesso
+                echo '<script>document.querySelector("form").reset();</script>';
+            } else {
+                echo '<script>mostrarMensagem("Erro ao cadastrar curso. Tente novamente.", "error");</script>';
+            }
+        } catch (PDOException $e) {
+            echo '<script>mostrarMensagem("Erro no banco de dados: ' . addslashes($e->getMessage()) . '", "error");</script>';
+        }
     }
 }
 
@@ -213,13 +247,16 @@ try {
     error_log("Erro ao cadastrar cursos automáticos: " . $e->getMessage());
 }
 
-// Buscar os cursos disponíveis do banco
+// CORREÇÃO 4: BUSCAR TODOS OS CURSOS DISPONÍVEIS DO BANCO
 $cursos_disponiveis = [];
+$total_cursos = 0; // ADICIONE ESTA LINHA
+
 try {
     $select = "SELECT * FROM tb_cursos ORDER BY id_curso DESC";
     $result = $conect->prepare($select);
     $result->execute();
     $cursos_disponiveis = $result->fetchAll(PDO::FETCH_OBJ);
+    $total_cursos = count($cursos_disponiveis); // ADICIONE ESTA LINHA
 } catch (PDOException $e) {
     echo '<script>mostrarMensagem("Erro ao buscar cursos disponíveis: ' . $e->getMessage() . '", "error");</script>';
 }
@@ -330,7 +367,7 @@ foreach ($cursos_disponiveis as $curso_db) {
                     </div>
 
                     <!-- Formulário -->
-                    <form class="p-8 space-y-6" action="" method="post" enctype="multipart/form-data">
+                    <form class="p-8 space-y-6" action="" method="post" enctype="multipart/form-data" id="formCurso">
                         
                         <!-- Nome do Curso -->
                         <div>
@@ -380,7 +417,6 @@ foreach ($cursos_disponiveis as $curso_db) {
                                 <option value="Desenvolvimento Pessoal" class="text-gray-700">Desenvolvimento Pessoal</option>
                             </select>
                         </div>
-
                         <!-- Descrição do Curso -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
@@ -389,6 +425,7 @@ foreach ($cursos_disponiveis as $curso_db) {
                             <textarea 
                                 name="descricao" 
                                 rows="4"
+                                required
                                 class="modern-input w-full px-4 py-3 rounded-lg transition-all duration-200 text-gray-800 placeholder-gray-500 resize-none"
                                 placeholder="Descreva o conteúdo do curso"
                             ></textarea>
@@ -666,6 +703,31 @@ function mostrarErro(texto) {
 function mostrarAviso(texto) {
     mostrarMensagem(texto, 'warning');
 }
+
+// CORREÇÃO 6: VALIDAÇÃO DO FORMULÁRIO - ADICIONE ESTE CÓDIGO
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formCurso');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const camposObrigatorios = form.querySelectorAll('[required]');
+            let valido = true;
+            
+            camposObrigatorios.forEach(campo => {
+                if (!campo.value.trim()) {
+                    valido = false;
+                    campo.style.borderColor = '#f44336';
+                } else {
+                    campo.style.borderColor = '';
+                }
+            });
+            
+            if (!valido) {
+                e.preventDefault();
+                mostrarMensagem('Preencha todos os campos obrigatórios!', 'error');
+            }
+        });
+    }
+});
 </script>
 
 <style>
