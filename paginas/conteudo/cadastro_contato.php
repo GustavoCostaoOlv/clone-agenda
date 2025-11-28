@@ -1,16 +1,73 @@
 <?php
 include_once('../config/conexao.php');
 
-// DEBUG - ADICIONE ESTAS LINHAS TEMPORARIAMENTE
-error_log("=== INICIANDO CADASTRO CURSO ===");
-error_log("SESSION: " . print_r($_SESSION, true));
-error_log("POST: " . print_r($_POST, true));
-error_log("FILES: " . print_r($_FILES, true));
+// 🔒 INICIAR SESSÃO SE NÃO ESTIVER INICIADA
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Verificar se usuário está logado
-if (!isset($_SESSION['loginUser']) || !isset($_SESSION['senhaUser'])) {
-    header("Location: ../index.php?acao=negado");
-    exit;
+// DEBUG - VERIFICAR ESTRUTURA DO BANCO
+error_log("=== VERIFICANDO BANCO DE DADOS ===");
+try {
+    // Verificar se tabela de cursos existe
+    $tabela_existe = $conect->query("SHOW TABLES LIKE 'tb_cursos'");
+    if ($tabela_existe->rowCount() == 0) {
+        error_log("❌ TABELA tb_cursos NÃO EXISTE!");
+        // Criar tabela se não existir
+       $criar_tabela = "
+CREATE TABLE IF NOT EXISTS tb_cursos (
+    id_curso INT AUTO_INCREMENT PRIMARY KEY,
+    nome_curso VARCHAR(255) NOT NULL,
+    carga_horaria VARCHAR(50) NOT NULL,
+    categoria VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    nivel VARCHAR(50) NOT NULL,
+    preco DECIMAL(10,2) DEFAULT 0.00,
+    imagem_curso VARCHAR(255) DEFAULT 'curso-padrao.jpg',
+    id_user INT NOT NULL,
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)";
+        $conect->exec($criar_tabela);
+        error_log("✅ TABELA tb_cursos CRIADA COM SUCESSO!");
+    } else {
+        error_log("✅ TABELA tb_cursos EXISTE");
+    }
+    
+    // Verificar estrutura da tabela
+$estrutura = $conect->query("DESCRIBE tb_cursos");
+error_log("ESTRUTURA: " . print_r($estrutura->fetchAll(PDO::FETCH_ASSOC), true));
+
+} catch (PDOException $e) {
+    error_log("ERRO BANCO: " . $e->getMessage());
+}
+
+// === 🖼️ VERIFICAR PASTA DE IMAGENS - ADICIONE ESTE BLOCO ===
+$pasta_img = "../img/cursos/";
+if (!is_dir($pasta_img)) {
+    mkdir($pasta_img, 0777, true);
+    error_log("✅ PASTA DE IMAGENS CRIADA: " . $pasta_img);
+}
+
+$imagem_padrao = $pasta_img . "curso-padrao.jpg";
+if (!file_exists($imagem_padrao)) {
+    // Verificar se GD está realmente disponível
+    if (extension_loaded('gd') && function_exists('imagecreate')) {
+        try {
+            // Criar uma imagem padrão simples
+            $imagem = imagecreate(100, 100);
+            $cor_fundo = imagecolorallocate($imagem, 74, 93, 115);
+            $cor_texto = imagecolorallocate($imagem, 255, 255, 255);
+            imagestring($imagem, 2, 10, 45, "CURSO", $cor_texto);
+            imagejpeg($imagem, $imagem_padrao);
+            imagedestroy($imagem);
+            error_log("✅ IMAGEM PADRÃO CRIADA COM GD");
+        } catch (Exception $e) {
+            error_log("⚠️ Erro ao criar imagem com GD: " . $e->getMessage());
+        }
+    } else {
+        // GD não disponível - pular criação
+        error_log("⚠️ GD não disponível - pulando criação de imagem");
+    }
 }
 
 // CORREÇÃO FINAL: ID DO USUÁRIO - VERIFIQUE QUAL CAMPO EXISTE NA SUA SESSÃO
@@ -18,26 +75,43 @@ if (isset($_SESSION['id_user'])) {
     $id_user = $_SESSION['id_user'];
 } elseif (isset($_SESSION['id'])) {
     $id_user = $_SESSION['id'];
+} elseif (isset($_SESSION['user_id'])) {
+    $id_user = $_SESSION['user_id'];
+} elseif (isset($_SESSION['idusuario'])) {
+    $id_user = $_SESSION['idusuario'];
 } else {
-    // Se não encontrar ID, use um valor padrão para teste
+    // DEBUG: Mostrar todas as variáveis de sessão
+    error_log("SESSION COMPLETA: " . print_r($_SESSION, true));
     $id_user = 1;
     error_log("ID do usuário não encontrado na sessão. Usando valor padrão: 1");
 }
 
 // Função para verificar se imagem existe
 function getImagemCurso($imagem_curso) {
+    if (empty($imagem_curso)) {
+        return 'curso-padrao.jpg';
+    }
+    
     $caminho_imagem = "../img/cursos/" . $imagem_curso;
     
-    if (!empty($imagem_curso) && file_exists($caminho_imagem) && $imagem_curso != 'curso-padrao.jpg') {
+    // Verificar se o arquivo existe e não é a imagem padrão
+    if (file_exists($caminho_imagem) && $imagem_curso != 'curso-padrao.jpg') {
         return $imagem_curso;
     } else {
         return 'curso-padrao.jpg';
     }
 }
 
-// CORREÇÃO 3: PROCESSAR CADASTRO DO CURSO - VERIFICAÇÃO MELHORADA
+// DEBUG - VERIFICAR O QUE ESTÁ CHEGANDO NO POST
+error_log("=== DEBUG FORMULÁRIO ===");
+error_log("POST: " . print_r($_POST, true));
+error_log("FILES: " . print_r($_FILES, true));
+
+// CORREÇÃO: PROCESSAR CADASTRO DO CURSO - VERSÃO SIMPLIFICADA
 if (isset($_POST['botao'])) {
-    // Sanitizar e validar dados
+    error_log("=== TENTATIVA DE CADASTRO INICIADA ===");
+    
+    // Sanitizar dados com valores padrão
     $nome_curso = trim($_POST['nome'] ?? '');
     $carga_horaria = trim($_POST['carga_horaria'] ?? '');
     $categoria = trim($_POST['categoria'] ?? '');
@@ -45,19 +119,29 @@ if (isset($_POST['botao'])) {
     $nivel = trim($_POST['nivel'] ?? '');
     $preco = floatval($_POST['preco'] ?? 0);
 
-      error_log("Dados processados:");
-    error_log("Nome: $nome_curso");
-    error_log("Carga: $carga_horaria");
-    error_log("Categoria: $categoria");
-    error_log("Nível: $nivel");
-    error_log("Preço: $preco");
+    error_log("Dados recebidos:");
+    error_log("Nome: '$nome_curso'");
+    error_log("Carga: '$carga_horaria'");
+    error_log("Categoria: '$categoria'");
+    error_log("Nível: '$nivel'");
+    error_log("Preço: '$preco'");
 
-    // Validar campos obrigatórios
-    if (empty($nome_curso) || empty($carga_horaria) || empty($categoria) || empty($descricao) || empty($nivel)) {
-        echo '<script>mostrarMensagem("Preencha todos os campos obrigatórios!", "error");</script>';
+    // VALIDAÇÃO SIMPLIFICADA - Vamos ver qual campo está falhando
+    $campos_faltantes = [];
+    if (empty($nome_curso)) $campos_faltantes[] = "Nome do Curso";
+    if (empty($carga_horaria)) $campos_faltantes[] = "Carga Horária";
+    if (empty($categoria)) $campos_faltantes[] = "Categoria";
+    if (empty($nivel)) $campos_faltantes[] = "Nível";
+
+    if (!empty($campos_faltantes)) {
+        $mensagem_erro = "Preencha os campos: " . implode(", ", $campos_faltantes);
+        echo '<script>mostrarMensagem("' . $mensagem_erro . '", "error");</script>';
+        error_log("CAMPOS FALTANTES: " . $mensagem_erro);
     } else {
-        // Upload da imagem
-        $foto_curso = 'curso-padrao.jpg'; // Valor padrão
+        error_log("✅ TODOS OS CAMPOS OBRIGATÓRIOS PREENCHIDOS");
+        
+        // Upload da imagem (mantenha igual)
+        $foto_curso = 'curso-padrao.jpg';
         
         if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
             $formatosPermitidos = array("png", "jpg", "jpeg", "gif");
@@ -66,7 +150,6 @@ if (isset($_POST['botao'])) {
             if (in_array($extensao, $formatosPermitidos)) {
                 $pasta = "../img/cursos/";
                 
-                // Verificar se pasta existe, se não, criar
                 if (!is_dir($pasta)) {
                     mkdir($pasta, 0777, true);
                 }
@@ -76,17 +159,15 @@ if (isset($_POST['botao'])) {
 
                 if (move_uploaded_file($temporario, $pasta . $novoNome)) {
                     $foto_curso = $novoNome;
-                    echo '<script>mostrarMensagem("Imagem enviada com sucesso!", "success");</script>';
-                } else {
-                    echo '<script>mostrarMensagem("Erro ao salvar a imagem. Usando imagem padrão.", "warning");</script>';
+                    error_log("✅ IMAGEM SALVA: " . $foto_curso);
                 }
-            } else {
-                echo '<script>mostrarMensagem("Formato de imagem não permitido! Use PNG, JPG, JPEG ou GIF.", "warning");</script>';
             }
         }
 
-        // CORREÇÃO: Inserir no banco de dados com tratamento de erro melhorado
+        // TENTAR CADASTRAR NO BANCO
         try {
+            error_log("🎯 TENTANDO INSERIR NO BANCO...");
+            
             $cadastro = "INSERT INTO tb_cursos (nome_curso, carga_horaria, categoria, descricao, nivel, preco, imagem_curso, id_user) 
                         VALUES (:nome, :carga, :categoria, :descricao, :nivel, :preco, :foto, :id_user)";
 
@@ -101,13 +182,23 @@ if (isset($_POST['botao'])) {
             $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
             
             if ($result->execute()) {
+                $ultimo_id = $conect->lastInsertId();
+                error_log("✅ CURSO CADASTRADO COM SUCESSO! ID: " . $ultimo_id);
                 echo '<script>mostrarMensagem("Curso cadastrado com sucesso!", "success");</script>';
-                // Limpar formulário após sucesso
-                echo '<script>document.querySelector("form").reset();</script>';
+                
+                // Limpar formulário
+                echo '<script>
+                    setTimeout(() => {
+                        document.querySelector("form").reset();
+                        window.location.reload();
+                    }, 2000);
+                </script>';
             } else {
+                error_log("❌ ERRO NO EXECUTE()");
                 echo '<script>mostrarMensagem("Erro ao cadastrar curso. Tente novamente.", "error");</script>';
             }
         } catch (PDOException $e) {
+            error_log("❌ ERRO PDO: " . $e->getMessage());
             echo '<script>mostrarMensagem("Erro no banco de dados: ' . addslashes($e->getMessage()) . '", "error");</script>';
         }
     }
@@ -259,6 +350,17 @@ try {
     $total_cursos = count($cursos_disponiveis); // ADICIONE ESTA LINHA
 } catch (PDOException $e) {
     echo '<script>mostrarMensagem("Erro ao buscar cursos disponíveis: ' . $e->getMessage() . '", "error");</script>';
+}
+
+// === 🔍 DEBUG - VERIFICAÇÃO DE CURSOS - COLE AQUI ===
+error_log("=== VERIFICANDO CURSOS ===");
+error_log("Cursos criados: " . count($meus_cursos_criados));
+error_log("Cursos disponíveis: " . count($cursos_disponiveis));
+error_log("Cursos matriculados: " . count($meus_cursos_matriculados));
+
+// Verificar conteúdo dos cursos
+foreach ($cursos_disponiveis as $index => $curso) {
+    error_log("Curso $index: " . $curso->nome_curso . " - Imagem: " . $curso->imagem_curso);
 }
 
 // Agrupar cursos por categoria
@@ -509,49 +611,53 @@ foreach ($cursos_disponiveis as $curso_db) {
             <div class="lg:col-span-2 space-y-6">
 
                 <!-- Seção: Meus Cursos (Matriculados) -->
-                <div class="glass-card rounded-2xl overflow-hidden">
-                    <div class="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
-                        <h2 class="text-2xl font-bold text-white flex items-center">
-                            <i class="fas fa-graduation-cap mr-3"></i>
-                            Meus Cursos
-                        </h2>
-                        <p class="text-green-100 mt-2">Cursos que você está matriculado</p>
-                    </div>
+<div class="glass-card rounded-2xl overflow-hidden">
+    <div class="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
+        <h2 class="text-2xl font-bold text-white flex items-center">
+            <i class="fas fa-graduation-cap mr-3"></i>
+            Meus Cursos
+        </h2>
+        <p class="text-green-100 mt-2">Cursos que você está matriculado</p>
+    </div>
 
-                    <div class="p-6">
-                        <?php if (count($meus_cursos_matriculados) > 0): ?>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <?php foreach ($meus_cursos_matriculados as $curso): ?>
-                                <div class="bg-white rounded-lg border border-gray-200 p-4">
-                                    <div class="flex items-start space-x-4">
-                                        <img src="../img/cursos/<?php echo getImagemCurso($curso->imagem_curso); ?>" 
-                                             alt="<?php echo $curso->nome_curso; ?>" 
-                                             class="w-16 h-16 rounded-lg object-cover"
-                                             onerror="this.src='../img/cursos/curso-padrao.jpg'">
-                                        <div class="flex-1">
-                                            <h3 class="font-semibold text-gray-800"><?php echo $curso->nome_curso; ?></h3>
-                                            <p class="text-sm text-gray-600 mt-1"><?php echo $curso->categoria; ?></p>
-                                            <div class="flex items-center justify-between mt-2">
-                                                <span class="text-xs text-gray-500">Progresso: <?php echo $curso->progresso ?? 0; ?>%</span>
-                                                <a href="ver-curso.php?id=<?php echo $curso->id_curso; ?>" 
-                                                   class="bg-[#4A5D73] text-white px-3 py-1 rounded text-sm hover:bg-[#3A4A5C] transition-colors">
-                                                    Continuar
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <?php endforeach; ?>
+    <div class="p-6">
+        <?php if (count($meus_cursos_matriculados) > 0): ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <?php foreach ($meus_cursos_matriculados as $curso): ?>
+                <div class="bg-white rounded-lg border border-gray-200 p-4">
+                    <div class="flex items-start space-x-4">
+                        <?php 
+                        $imagem_curso = getImagemCurso($curso->imagem_curso);
+                        $caminho_completo = "../img/cursos/" . $imagem_curso;
+                        ?>
+                        <img src="<?php echo $caminho_completo; ?>" 
+                             alt="<?php echo htmlspecialchars($curso->nome_curso); ?>" 
+                             class="w-16 h-16 rounded-lg object-cover"
+                             onerror="this.src='../img/cursos/curso-padrao.jpg'">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-800"><?php echo htmlspecialchars($curso->nome_curso); ?></h3>
+                            <p class="text-sm text-gray-600 mt-1"><?php echo htmlspecialchars($curso->categoria); ?></p>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="text-xs text-gray-500">Progresso: <?php echo $curso->progresso ?? 0; ?>%</span>
+                                <a href="ver-curso.php?id=<?php echo $curso->id_curso; ?>" 
+                                   class="bg-[#4A5D73] text-white px-3 py-1 rounded text-sm hover:bg-[#3A4A5C] transition-colors">
+                                    Continuar
+                                </a>
                             </div>
-                        <?php else: ?>
-                            <div class="text-center py-8">
-                                <i class="fas fa-book-open text-4xl text-gray-400 mb-4"></i>
-                                <h3 class="text-xl font-semibold text-gray-600 mb-2">Nenhum curso matriculado</h3>
-                                <p class="text-gray-500">Explore os cursos disponíveis e comece sua jornada de aprendizado!</p>
-                            </div>
-                        <?php endif; ?>
+                        </div>
                     </div>
                 </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="text-center py-8">
+                <i class="fas fa-book-open text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">Nenhum curso matriculado</h3>
+                <p class="text-gray-500">Explore os cursos disponíveis e comece sua jornada de aprendizado!</p>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
 
                 <!-- Seção: Cursos Disponíveis -->
                 <div class="glass-card rounded-2xl overflow-hidden">
@@ -591,12 +697,21 @@ foreach ($cursos_disponiveis as $curso_db) {
                             </div>
 
                             <!-- Grid de cursos da categoria -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-                               <?php foreach ($cursos_da_categoria as $curso): 
-                                
-                            ?>
-                                <div class="course-card bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                                    <div class="p-6 flex-1">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
+    <?php foreach ($cursos_da_categoria as $curso): 
+        $imagem_curso_disponivel = getImagemCurso($curso['imagem_curso']);
+        $caminho_completo_disponivel = "../img/cursos/" . $imagem_curso_disponivel;
+    ?>
+    <div class="course-card bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+        <!-- IMAGEM DO CURSO - ADICIONE ESTE BLOCO -->
+        <div class="h-32 bg-gradient-to-r from-[#4A5D73] to-[#324151] relative">
+            <img src="<?php echo $caminho_completo_disponivel; ?>" 
+                 alt="<?php echo htmlspecialchars($curso['nome']); ?>"
+                 class="w-full h-full object-cover"
+                 onerror="this.src='../img/cursos/curso-padrao.jpg'">
+        </div>
+        
+        <div class="p-6 flex-1">
                                         <!-- Cabeçalho do Curso -->
                                         <div class="flex justify-between items-start mb-3">
                                             <div class="flex-1">
