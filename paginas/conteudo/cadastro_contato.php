@@ -1,6 +1,7 @@
 <?php
 include_once('../config/conexao.php');
 
+
 // 🔒 INICIAR SESSÃO SE NÃO ESTIVER INICIADA
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
@@ -86,21 +87,160 @@ if (isset($_SESSION['id_user'])) {
     error_log("ID do usuário não encontrado na sessão. Usando valor padrão: 1");
 }
 
-// Função para verificar se imagem existe
-function getImagemCurso($imagem_curso) {
-    if (empty($imagem_curso)) {
-        return 'curso-padrao.jpg';
+// Função para detectar automaticamente a extensão real da imagem
+function getImagemCurso($imagem_curso, $nome_curso = '', $id_curso = 0) {
+    error_log("🔍 Buscando imagem para Curso ID: {$id_curso}, Nome: {$nome_curso}");
+    
+    // Lista oficial dos nomes base (sem extensão)
+    $nomes_base_por_id = [
+        2 => 'desenvolvimento-web',
+        3 => 'python-data-science',
+        4 => 'javascript-moderno',
+        5 => 'react-nextjs',
+        6 => 'marketing-digital',
+        7 => 'gestao-projetos',
+        8 => 'design-uxui',
+        9 => 'oratoria'
+    ];
+
+    // Lista de todas as extensões possíveis
+    $extensoes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+    // Se o ID está no array, tenta achar o arquivo
+    if (isset($nomes_base_por_id[$id_curso])) {
+        $nome_base = trim($nomes_base_por_id[$id_curso]);
+
+        foreach ($extensoes as $ext) {
+            $arquivo = "{$nome_base}.{$ext}";
+            $caminho = "../img/cursos/" . $arquivo;
+
+            if (file_exists($caminho)) {
+                error_log("✅ Encontrado automaticamente: {$arquivo}");
+                return $arquivo;
+            }
+        }
+
+        // Nenhuma imagem encontrada para esse ID
+        error_log("❌ Nenhuma imagem encontrada para {$nome_base} em qualquer extensão.");
+    }
+
+    // Se existe imagem salva no banco, usa ela
+    if (!empty($imagem_curso) && $imagem_curso !== 'curso-padrao.jpg') {
+        $caminho = "../img/cursos/" . $imagem_curso;
+
+        if (file_exists($caminho)) {
+            error_log("✅ Usando imagem do banco: {$imagem_curso}");
+            return $imagem_curso;
+        } else {
+            error_log("⚠️ Imagem no banco não encontrada: {$imagem_curso}");
+        }
+    }
+
+    // Última opção
+    error_log("⚠️ Usando imagem padrão");
+    return 'curso-padrao.jpg';
+}
+
+
+// DEBUG CRÍTICO: Verificar o que está acontecendo com cada curso (VERSÃO SEGURA)
+function debugImagensCursos() {
+    global $cursos_disponiveis;
+    
+    error_log("=== 🎯 DEBUG CRÍTICO - VERIFICANDO IMAGENS ===");
+    
+    // Verifica se a variável existe e é um array
+    if (!isset($cursos_disponiveis) || !is_array($cursos_disponiveis)) {
+        error_log("❌ ERRO: \$cursos_disponiveis não está definida ou não é um array");
+        error_log("Tipo: " . gettype($cursos_disponiveis));
+        return;
     }
     
-    $caminho_imagem = "../img/cursos/" . $imagem_curso;
+    if (empty($cursos_disponiveis)) {
+        error_log("⚠️ AVISO: \$cursos_disponiveis está vazia");
+        return;
+    }
     
-    // Verificar se o arquivo existe e não é a imagem padrão
-    if (file_exists($caminho_imagem) && $imagem_curso != 'curso-padrao.jpg') {
-        return $imagem_curso;
-    } else {
-        return 'curso-padrao.jpg';
+    error_log("Total de cursos encontrados: " . count($cursos_disponiveis));
+    
+    foreach ($cursos_disponiveis as $index => $curso) {
+        // Verifica se o curso é um objeto válido
+        if (!is_object($curso)) {
+            error_log("❌ Curso no índice {$index} não é um objeto: " . gettype($curso));
+            continue;
+        }
+        
+        // Verifica se as propriedades existem
+        if (!property_exists($curso, 'id_curso') || !property_exists($curso, 'nome_curso') || !property_exists($curso, 'imagem_curso')) {
+            error_log("❌ Curso no índice {$index} não tem propriedades necessárias");
+            continue;
+        }
+        
+        $imagem_encontrada = getImagemCurso($curso->imagem_curso, $curso->nome_curso, $curso->id_curso);
+        $caminho_encontrado = "../img/cursos/" . $imagem_encontrada;
+        $existe = file_exists($caminho_encontrado) ? "✅ EXISTE" : "❌ NÃO EXISTE";
+        
+        error_log("Curso ID {$curso->id_curso}: {$curso->nome_curso}");
+        error_log("  - Imagem no banco: {$curso->imagem_curso}");
+        error_log("  - Imagem encontrada: {$imagem_encontrada}");
+        error_log("  - Status: {$existe}");
+        error_log("  ---");
     }
 }
+
+debugImagensCursos();
+
+// DEBUG: Verificar estado do banco de dados
+function debugEstadoBanco() {
+    global $conect;
+    
+    error_log("=== 🗄️ DEBUG ESTADO DO BANCO ===");
+    
+    try {
+        $result = $conect->query("SELECT COUNT(*) as total FROM tb_cursos");
+        $total = $result->fetch(PDO::FETCH_OBJ)->total;
+        error_log("Total de cursos no banco: {$total}");
+        
+        // Ver cursos específicos
+        $cursos = $conect->query("SELECT id_curso, nome_curso, imagem_curso FROM tb_cursos WHERE id_curso BETWEEN 2 AND 9 ORDER BY id_curso");
+        $cursos_data = $cursos->fetchAll(PDO::FETCH_OBJ);
+        
+        error_log("Cursos ID 2-9 no banco:");
+        foreach ($cursos_data as $curso) {
+            error_log("  ID {$curso->id_curso}: {$curso->nome_curso} -> {$curso->imagem_curso}");
+        }
+        
+    } catch (PDOException $e) {
+        error_log("❌ ERRO AO ACESSAR BANCO: " . $e->getMessage());
+    }
+}
+
+debugEstadoBanco();
+
+// DEBUG: Verificar arquivos reais na pasta
+function debugArquivosPasta() {
+    $pasta = "../img/cursos/";
+    
+    error_log("=== 📁 DEBUG ARQUIVOS NA PASTA ===");
+    
+    if (!is_dir($pasta)) {
+        error_log("❌ PASTA NÃO EXISTE: {$pasta}");
+        return;
+    }
+    
+    $arquivos = scandir($pasta);
+    $arquivos_validos = array_filter($arquivos, function($arquivo) {
+        return $arquivo != '.' && $arquivo != '..';
+    });
+    
+    error_log("Arquivos encontrados na pasta:");
+    foreach ($arquivos_validos as $arquivo) {
+        $caminho = $pasta . $arquivo;
+        $tamanho = filesize($caminho);
+        error_log("  📄 {$arquivo} ({$tamanho} bytes)");
+    }
+}
+
+debugArquivosPasta();
 
 // DEBUG - VERIFICAR O QUE ESTÁ CHEGANDO NO POST
 error_log("=== DEBUG FORMULÁRIO ===");
