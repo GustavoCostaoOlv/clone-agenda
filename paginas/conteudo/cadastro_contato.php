@@ -7,6 +7,11 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
+// 🎯 DEBUG MENSAGENS - REMOVA DEPOIS
+error_log("=== 🔍 VERIFICANDO MENSAGENS ===");
+error_log("SESSION mensagem: " . ($_SESSION['mensagem'] ?? 'NÃO EXISTE'));
+error_log("SESSION tipo_mensagem: " . ($_SESSION['tipo_mensagem'] ?? 'NÃO EXISTE'));
+
 $_SESSION['mensagem'] = '';
 $_SESSION['tipo_mensagem'] = '';
 
@@ -965,15 +970,24 @@ foreach ($cursos_disponiveis as $curso_db) {
                                 </span>
                             </div>
                             
-                            <div class="flex items-center justify-between mt-2">
-                                <span class="text-xs text-gray-500">
-                                    Progresso: <?php echo isset($curso->progresso) ? $curso->progresso . '%' : '0%'; ?>
-                                </span>
-                                <a href="ver-curso.php?id=<?php echo $curso->id_curso; ?>" 
-                                   class="bg-[#4A5D73] text-white px-3 py-1 rounded text-sm hover:bg-[#3A4A5C] transition-colors">
-                                    <?php echo $eh_criador ? 'Gerenciar' : 'Continuar'; ?>
-                                </a>
-                            </div>
+                           <div class="flex items-center justify-between mt-2">
+    <span class="text-xs text-gray-500">
+        Progresso: <?php echo isset($curso->progresso) ? $curso->progresso . '%' : '0%'; ?>
+    </span>
+    <div class="flex space-x-2">
+        <!-- BOTÃO DE DELETAR - APENAS PARA CRIADORES -->
+        <?php if ($eh_criador): ?>
+        <button onclick="confirmarDelecao(<?php echo $curso->id_curso; ?>, '<?php echo htmlspecialchars($curso->nome_curso); ?>')" 
+                class="group relative bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white p-2 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                title="Deletar curso">
+            <i class="fas fa-trash-alt text-xs"></i>
+            <span class="absolute -top-8 -left-2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                Deletar Curso
+            </span>
+        </button>
+        <?php endif; ?>
+    </div>
+</div>
                         </div>
                     </div>
                 </div>
@@ -1234,6 +1248,67 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         document.getElementById(`tab-${tabId}`).classList.remove('hidden');
     });
 });
+
+function confirmarDelecao(id_curso, nome_curso) {
+    if (confirm(`Tem certeza que deseja deletar o curso "${nome_curso}"?\n\nEsta ação não pode ser desfeita!`)) {
+        // 🎯 TESTE ESTES CAMINHOS (um por vez):
+        
+        // Opção 1 - Se del-contatos.php está na pasta PAI de conteudo/
+        window.location.href = `../del-contatos.php?idDel=${id_curso}&tipo=curso`;
+        
+        // Opção 2 - Se está na mesma pasta que config/
+        // window.location.href = `../../paginas/del-contatos.php?idDel=${id_curso}&tipo=curso`;
+        
+        // Opção 3 - Caminho absoluto
+        // window.location.href = `/index/clone-agenda/paginas/del-contatos.php?idDel=${id_curso}&tipo=curso`;
+        
+        // Opção 4 - URL completa
+        // window.location.href = `http://localhost/index/clone-agenda/paginas/del-contatos.php?idDel=${id_curso}&tipo=curso`;
+    }
+}
+
+function confirmarDelecao(id_curso, nome_curso) {
+    if (confirm(`Tem certeza que deseja deletar o curso "${nome_curso}"?\n\nEsta ação não pode ser desfeita!`)) {
+        // 🎯 NOME CORRETO: del-contato.php
+        window.location.href = `del-contato.php?idDel=${id_curso}&tipo=curso`;
+    }
+}
+
+// 🎯 MOSTRAR MENSAGENS DA SESSÃO
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (isset($_SESSION['mensagem']) && !empty($_SESSION['mensagem'])): ?>
+    console.log('📢 Mensagem da sessão:', '<?php echo $_SESSION['mensagem']; ?>');
+    setTimeout(() => {
+        mostrarMensagem('<?php echo addslashes($_SESSION['mensagem']); ?>', '<?php echo $_SESSION['tipo_mensagem'] ?? 'success'; ?>');
+    }, 500);
+    
+    <?php 
+    // Limpar a mensagem após mostrar
+    unset($_SESSION['mensagem']);
+    unset($_SESSION['tipo_mensagem']);
+    ?>
+    <?php endif; ?>
+});
+
+// 🎯 DEBUG - VERIFICAR CAMINHOS (REMOVA DEPOIS)
+console.log('📍 Caminho atual:', window.location.pathname);
+console.log('📁 URL completa:', window.location.href);
+
+// Teste manual no console
+function testarCaminho() {
+    const caminhos = [
+        '../del-contatos.php',
+        '../../paginas/del-contatos.php',
+        '/index/clone-agenda/paginas/del-contatos.php'
+    ];
+    
+    caminhos.forEach(caminho => {
+        console.log('🔗 Testando:', caminho);
+    });
+}
+
+console.log('✅ DEBUG: Função testarCaminho() carregada!');
+console.log('💡 Execute no console: testarCaminho()');
 </script>
 </body>
 </html>

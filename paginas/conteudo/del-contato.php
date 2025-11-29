@@ -1,50 +1,48 @@
 <?php
-include('../../config/conexao.php');
+// 🎯 DEBUG COMPLETO
+error_log("=== 🚨 DEBUG DEL-CONTATOS.PHP ===");
+error_log("📡 URL: " . ($_SERVER['REQUEST_URI'] ?? 'N/A'));
+error_log("📋 GET: " . print_r($_GET, true));
+error_log("📍 Script: " . __FILE__);
 
-if(isset($_GET['idDel'])){
-    $id = $_GET['idDel'];
+// Verificar se consegue escrever na tela
+echo "🎯 del-contatos.php CARREGADO!<br>";
+echo "📋 Parâmetros GET: " . print_r($_GET, true) . "<br>";
 
-    $select = "SELECT foto_contatos FROM tb_contatos WHERE id_contatos=:id";
+// Testar conexão com banco
+include_once('../config/conexao.php');
+echo "✅ Conexão com banco: OK<br>";
+
+// Testar sessão
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+echo "✅ Sessão: OK<br>";
+
+// Verificar se é curso
+if(isset($_GET['idDel']) && isset($_GET['tipo']) && $_GET['tipo'] == 'curso') {
+    echo "🎯 É um CURSO! ID: " . $_GET['idDel'] . "<br>";
+    
+    // Testar consulta ao banco
     try {
+        $select = "SELECT id_curso, nome_curso FROM tb_cursos WHERE id_curso = :id";
         $result = $conect->prepare($select);
-        $result->bindValue(':id', $id, PDO::PARAM_INT);
+        $result->bindValue(':id', $_GET['idDel'], PDO::PARAM_INT);
         $result->execute();
-
-         $foto = 'avatar-padrao.png';  // ← evita erro caso não tenha foto
-
-        $contar = $result->rowCount();
-        if ($contar > 0) {
-            $dados = $result->fetch(PDO::FETCH_ASSOC);
-            $foto = $dados['foto_contatos']; // ← Aqui você passa a ter a foto real
-
-            if (empty($foto)) {
-             $foto = 'avatar-padrao.png';
-            }
+        
+        if ($result->rowCount() > 0) {
+            $curso = $result->fetch(PDO::FETCH_ASSOC);
+            echo "✅ Curso encontrado: " . $curso['nome_curso'] . "<br>";
+        } else {
+            echo "❌ Curso não encontrado<br>";
         }
-        if ($foto != 'avatar-padrao.png') { // fogo, terra, agua e vento
-            $filePath = "../../img/cont/" . $foto;
-
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
-        }
-        $delete = "DELETE FROM tb_contatos WHERE id_contatos = :id";
-        try {
-            $result = $conect->prepare($delete);
-            $result->bindValue(':id', $id, PDO::PARAM_INT);
-            $result->execute();
-
-            if ($result->rowCount() > 0) {
-                header("Location: ../home.php");
-            } else {
-                header("location: ../home.php");
-            }
-            
-        } catch (PDOException $e) {
-            echo "<strong>ERRO DE DELETE: </strong>" . $e->getMessage();
-        } 
     } catch (PDOException $e) {
-        echo "<strong>ERRO DE DELETE: </strong>" . $e->getMessage();
-       
+        echo "❌ Erro banco: " . $e->getMessage() . "<br>";
     }
-} else {header("Location: ../home.php");}
+    
+} else {
+    echo "❌ Não é um curso ou parâmetros faltando<br>";
+}
+
+echo "--- FIM DEBUG ---";
+exit();
