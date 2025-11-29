@@ -1,10 +1,31 @@
 <?php
 include_once('../config/conexao.php');
-
+error_log("📁 CAMINHO DO LOG: " . ini_get('error_log'));
 
 // 🔒 INICIAR SESSÃO SE NÃO ESTIVER INICIADA
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
+}
+
+$_SESSION['mensagem'] = '';
+$_SESSION['tipo_mensagem'] = '';
+
+
+// DEBUG - VERIFICAR USUÁRIO DA SESSÃO
+error_log("=== 🔍 DEBUG SESSÃO USUÁRIO ===");
+error_log("SESSION: " . print_r($_SESSION, true));
+
+// Verificar se existe algum usuário na tabela tb_user
+try {
+    $verifica_user = $conect->query("SELECT id_user FROM tb_user LIMIT 1");
+    if ($verifica_user->rowCount() > 0) {
+        $user_example = $verifica_user->fetch(PDO::FETCH_OBJ);
+        error_log("✅ Existe usuário na tabela. Exemplo ID: " . $user_example->id_user);
+    } else {
+        error_log("❌ Nenhum usuário na tabela tb_user");
+    }
+} catch (PDOException $e) {
+    error_log("❌ Erro ao verificar tb_user: " . $e->getMessage());
 }
 
 // DEBUG - VERIFICAR ESTRUTURA DO BANCO
@@ -71,7 +92,12 @@ if (!file_exists($imagem_padrao)) {
     }
 }
 
-// CORREÇÃO FINAL: ID DO USUÁRIO - VERIFIQUE QUAL CAMPO EXISTE NA SUA SESSÃO
+// 🎯 SOLUÇÃO COMPLETA: RESOLVER PROBLEMA DO USUÁRIO
+error_log("=== 🔍 DEBUG SESSÃO USUÁRIO ===");
+error_log("SESSION: " . print_r($_SESSION, true));
+
+// 1. Primeiro tentar pegar da sessão
+$id_user = null;
 if (isset($_SESSION['id_user'])) {
     $id_user = $_SESSION['id_user'];
 } elseif (isset($_SESSION['id'])) {
@@ -80,12 +106,61 @@ if (isset($_SESSION['id_user'])) {
     $id_user = $_SESSION['user_id'];
 } elseif (isset($_SESSION['idusuario'])) {
     $id_user = $_SESSION['idusuario'];
-} else {
-    // DEBUG: Mostrar todas as variáveis de sessão
-    error_log("SESSION COMPLETA: " . print_r($_SESSION, true));
-    $id_user = 1;
-    error_log("ID do usuário não encontrado na sessão. Usando valor padrão: 1");
 }
+
+// 2. Verificar se o usuário da sessão EXISTE na tabela tb_user
+if ($id_user) {
+    try {
+        $verifica_user_especifico = $conect->prepare("SELECT id_user FROM tb_user WHERE id_user = ?");
+        $verifica_user_especifico->execute([$id_user]);
+        
+        if ($verifica_user_especifico->rowCount() == 0) {
+            error_log("❌ Usuário da sessão ID {$id_user} NÃO EXISTE na tb_user");
+            $id_user = null; // Invalidar o ID
+        } else {
+            error_log("✅ Usuário da sessão ID {$id_user} EXISTE na tb_user");
+        }
+    } catch (PDOException $e) {
+        error_log("❌ Erro ao verificar usuário específico: " . $e->getMessage());
+        $id_user = null;
+    }
+}
+
+// 3. Se não tem ID válido, buscar ou criar um usuário
+if (!$id_user) {
+    try {
+        // Verificar se existe ALGUM usuário na tabela
+        $verifica_qualquer_user = $conect->query("SELECT id_user FROM tb_user LIMIT 1");
+        
+        if ($verifica_qualquer_user->rowCount() > 0) {
+            // Usar o primeiro usuário existente
+            $user_existente = $verifica_qualquer_user->fetch(PDO::FETCH_OBJ);
+            $id_user = $user_existente->id_user;
+            error_log("✅ Usando usuário existente ID: " . $id_user);
+            
+        } else {
+            // Criar usuário padrão
+            error_log("❌ Nenhum usuário na tabela tb_user. Criando usuário padrão...");
+            
+            $criar_user = "INSERT INTO tb_user (nome, email, senha, data_cadastro) 
+                          VALUES ('Usuário Padrão', 'default@email.com', '123456', NOW())";
+            $conect->exec($criar_user);
+            $id_user = $conect->lastInsertId();
+            
+            error_log("✅ USUÁRIO PADRÃO CRIADO COM ID: " . $id_user);
+        }
+        
+    } catch (PDOException $e) {
+        error_log("❌ Erro crítico ao verificar/criar usuário: " . $e->getMessage());
+        // Último recurso - tentar usar ID 1
+        $id_user = 1;
+        error_log("⚠️ Usando ID fallback: " . $id_user);
+    }
+}
+
+// 4. Garantir que o ID é inteiro
+$id_user = (int)$id_user;
+error_log("🎯 ID USER FINAL: " . $id_user);
 
 // Função para detectar automaticamente a extensão real da imagem
 function getImagemCurso($imagem_curso, $nome_curso = '', $id_curso = 0) {
@@ -139,6 +214,33 @@ function getImagemCurso($imagem_curso, $nome_curso = '', $id_curso = 0) {
     // Última opção
     error_log("⚠️ Usando imagem padrão");
     return 'curso-padrao.jpg';
+}
+
+// 🔍 SOLUÇÃO 3: DEBUG UPLOAD - COLE AQUI
+function debugUpload() {
+    $pasta = "../img/cursos/";
+    
+    error_log("=== 🔍 DEBUG UPLOAD ===");
+    error_log("Pasta: " . $pasta);
+    error_log("Existe: " . (is_dir($pasta) ? 'SIM' : 'NÃO'));
+    error_log("É gravável: " . (is_writable($pasta) ? 'SIM' : 'NÃO'));
+    
+    if (is_dir($pasta)) {
+        error_log("Permissões: " . substr(sprintf('%o', fileperms($pasta)), -4));
+        
+        // Listar arquivos na pasta
+        $arquivos = scandir($pasta);
+        $arquivos_validos = array_filter($arquivos, function($arquivo) {
+            return $arquivo != '.' && $arquivo != '..';
+        });
+        
+        error_log("Arquivos na pasta cursos:");
+        foreach ($arquivos_validos as $arquivo) {
+            $caminho = $pasta . $arquivo;
+            $tamanho = filesize($caminho);
+            error_log("  📄 {$arquivo} ({$tamanho} bytes)");
+        }
+    }
 }
 
 
@@ -275,34 +377,58 @@ if (isset($_POST['botao'])) {
 
     if (!empty($campos_faltantes)) {
         $mensagem_erro = "Preencha os campos: " . implode(", ", $campos_faltantes);
-        echo '<script>mostrarMensagem("' . $mensagem_erro . '", "error");</script>';
+        // NOVO:
+        $_SESSION['mensagem'] = $mensagem_erro;
+        $_SESSION['tipo_mensagem'] = "error";
         error_log("CAMPOS FALTANTES: " . $mensagem_erro);
     } else {
         error_log("✅ TODOS OS CAMPOS OBRIGATÓRIOS PREENCHIDOS");
         
-        // Upload da imagem (mantenha igual)
-        $foto_curso = 'curso-padrao.jpg';
+        // Upload da imagem - VERSÃO CORRIGIDA
+$foto_curso = 'curso-padrao.jpg';
+
+if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+    $formatosPermitidos = array("png", "jpg", "jpeg", "gif", "webp");
+    $extensao = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
+
+    if (in_array($extensao, $formatosPermitidos)) {
+        $pasta = "../img/cursos/";
         
-        if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-            $formatosPermitidos = array("png", "jpg", "jpeg", "gif");
-            $extensao = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
-
-            if (in_array($extensao, $formatosPermitidos)) {
-                $pasta = "../img/cursos/";
-                
-                if (!is_dir($pasta)) {
-                    mkdir($pasta, 0777, true);
-                }
-                
-                $temporario = $_FILES['foto']['tmp_name'];
-                $novoNome = uniqid() . ".$extensao";
-
-                if (move_uploaded_file($temporario, $pasta . $novoNome)) {
-                    $foto_curso = $novoNome;
-                    error_log("✅ IMAGEM SALVA: " . $foto_curso);
-                }
-            }
+        // Garantir que a pasta existe
+        if (!is_dir($pasta)) {
+            mkdir($pasta, 0777, true);
         }
+        
+        $temporario = $_FILES['foto']['tmp_name'];
+        
+        // Nome mais descritivo para a imagem
+        $nome_sem_espacos = preg_replace('/[^a-zA-Z0-9]/', '-', $nome_curso);
+        $nome_sem_espacos = strtolower($nome_sem_espacos);
+        $novoNome = $nome_sem_espacos . '-' . uniqid() . ".$extensao";
+
+        if (move_uploaded_file($temporario, $pasta . $novoNome)) {
+            $foto_curso = $novoNome;
+            error_log("✅ IMAGEM SALVA COM SUCESSO: " . $foto_curso);
+            
+            // Verificar se o arquivo realmente foi criado
+            if (file_exists($pasta . $novoNome)) {
+                error_log("✅ ARQUIVO CONFIRMADO NA PASTA: " . $novoNome);
+            } else {
+                error_log("❌ ARQUIVO NÃO ENCONTRADO APÓS UPLOAD");
+            }
+        } else {
+            error_log("❌ FALHA NO move_uploaded_file");
+            error_log("Temporário: " . $temporario);
+            error_log("Destino: " . $pasta . $novoNome);
+            error_log("Permissões: " . substr(sprintf('%o', fileperms($pasta)), -4));
+        }
+    } else {
+        error_log("❌ FORMATO NÃO PERMITIDO: " . $extensao);
+    }
+} else {
+    $erro_upload = $_FILES['foto']['error'] ?? 'Nenhum arquivo';
+    error_log("❌ ERRO NO UPLOAD: " . $erro_upload);
+}
 
         // TENTAR CADASTRAR NO BANCO
         try {
@@ -324,7 +450,30 @@ if (isset($_POST['botao'])) {
             if ($result->execute()) {
                 $ultimo_id = $conect->lastInsertId();
                 error_log("✅ CURSO CADASTRADO COM SUCESSO! ID: " . $ultimo_id);
-                echo '<script>mostrarMensagem("Curso cadastrado com sucesso!", "success");</script>';
+
+                   // 🎯 SOLUÇÃO 4: MATRICULAR AUTOMATICAMENTE O CRIADOR - COLE AQUI
+                try {
+                    $matricula = "INSERT INTO tb_matriculas (id_curso, id_user, data_matricula, progresso) 
+                                VALUES (:id_curso, :id_user, NOW(), 0)";
+                    $result_matricula = $conect->prepare($matricula);
+                    $result_matricula->bindParam(':id_curso', $ultimo_id, PDO::PARAM_INT);
+                    $result_matricula->bindParam(':id_user', $id_user, PDO::PARAM_INT);
+                    
+                    if ($result_matricula->execute()) {
+                        error_log("✅ CRIADOR AUTOMATICAMENTE MATRICULADO NO CURSO");
+                    }
+                } catch (PDOException $e) {
+                    error_log("⚠️ AVISO: Não foi possível matricular o criador: " . $e->getMessage());
+                    // Não mostrar erro para o usuário, pois o curso foi criado com sucesso
+                }
+
+               // NOVO:
+$_SESSION['mensagem'] = "Curso cadastrado com sucesso!";
+$_SESSION['tipo_mensagem'] = "success";
+
+// ADICIONE O REDIRECT E EXIT
+echo '<script>window.location.href = window.location.href;</script>';
+exit();
                 
                 // Limpar formulário
                 echo '<script>
@@ -335,11 +484,16 @@ if (isset($_POST['botao'])) {
                 </script>';
             } else {
                 error_log("❌ ERRO NO EXECUTE()");
-                echo '<script>mostrarMensagem("Erro ao cadastrar curso. Tente novamente.", "error");</script>';
+                // NOVO:
+$_SESSION['mensagem'] = "Erro ao cadastrar curso. Tente novamente.";
+$_SESSION['tipo_mensagem'] = "error";
             }
+            
         } catch (PDOException $e) {
             error_log("❌ ERRO PDO: " . $e->getMessage());
-            echo '<script>mostrarMensagem("Erro no banco de dados: ' . addslashes($e->getMessage()) . '", "error");</script>';
+            // NOVO:
+$_SESSION['mensagem'] = "Erro no banco de dados: " . $e->getMessage();
+$_SESSION['tipo_mensagem'] = "error";
         }
     }
 }
@@ -349,11 +503,11 @@ $meus_cursos_criados = [];
 try {
     $select = "SELECT * FROM tb_cursos WHERE id_user = :id_user ORDER BY id_curso DESC";
     $result = $conect->prepare($select);
-    $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
+    $result->bindParam(':id_user', $id_user, PDO::PARAM_INT); // ADICIONE ESTA LINHA
     $result->execute();
     $meus_cursos_criados = $result->fetchAll(PDO::FETCH_OBJ);
 } catch (PDOException $e) {
-    echo '<script>mostrarMensagem("Erro ao buscar cursos criados: ' . $e->getMessage() . '", "error");</script>';
+    error_log("Erro ao buscar cursos criados: " . $e->getMessage());
 }
 
 // CORREÇÃO: Buscar cursos que o usuário está matriculado com verificação mais robusta
@@ -365,7 +519,7 @@ try {
                WHERE mc.id_user = :id_user 
                ORDER BY mc.data_matricula DESC";
     $result = $conect->prepare($select);
-    $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
+    $result->bindParam(':id_user', $id_user, PDO::PARAM_INT); // ADICIONE ESTA LINHA
     $result->execute();
     $meus_cursos_matriculados = $result->fetchAll(PDO::FETCH_OBJ);
 } catch (PDOException $e) {
@@ -478,18 +632,19 @@ try {
     error_log("Erro ao cadastrar cursos automáticos: " . $e->getMessage());
 }
 
-// CORREÇÃO 4: BUSCAR TODOS OS CURSOS DISPONÍVEIS DO BANCO
+// CORREÇÃO 4: BUSCAR CURSOS DISPONÍVEIS (APENAS DE OUTROS USUÁRIOS)
 $cursos_disponiveis = [];
-$total_cursos = 0; // ADICIONE ESTA LINHA
+$total_cursos = 0;
 
 try {
-    $select = "SELECT * FROM tb_cursos ORDER BY id_curso DESC";
-    $result = $conect->prepare($select);
+    $select = "SELECT * FROM tb_cursos WHERE id_user != :id_user ORDER BY id_curso DESC";
+    $result = $conect->prepare($select); // ✅ FALTAVA ESTA LINHA!
+    $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
     $result->execute();
     $cursos_disponiveis = $result->fetchAll(PDO::FETCH_OBJ);
-    $total_cursos = count($cursos_disponiveis); // ADICIONE ESTA LINHA
+    $total_cursos = count($cursos_disponiveis);
 } catch (PDOException $e) {
-    echo '<script>mostrarMensagem("Erro ao buscar cursos disponíveis: ' . $e->getMessage() . '", "error");</script>';
+   error_log("Erro ao buscar cursos disponíveis: " . $e->getMessage());
 }
 
 // === 🔍 DEBUG - VERIFICAÇÃO DE CURSOS - COLE AQUI ===
@@ -750,24 +905,43 @@ foreach ($cursos_disponiveis as $curso_db) {
             <!-- Coluna Direita - Duas Seções -->
             <div class="lg:col-span-2 space-y-6">
 
-                <!-- Seção: Meus Cursos (Matriculados) -->
+                <!-- Seção: Meus Cursos (Criados e Matriculados) -->
+
+
 <div class="glass-card rounded-2xl overflow-hidden">
     <div class="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
         <h2 class="text-2xl font-bold text-white flex items-center">
             <i class="fas fa-graduation-cap mr-3"></i>
             Meus Cursos
         </h2>
-        <p class="text-green-100 mt-2">Cursos que você está matriculado</p>
+        <p class="text-green-100 mt-2">Cursos que você criou e está matriculado</p>
     </div>
 
     <div class="p-6">
-        <?php if (count($meus_cursos_matriculados) > 0): ?>
+        <?php 
+        // Combinar cursos criados e matriculados
+        $todos_meus_cursos = array_merge($meus_cursos_criados, $meus_cursos_matriculados);
+        
+        // Remover duplicatas (caso o usuário tenha criado e se matriculado no mesmo curso)
+        $cursos_unicos = [];
+        $ids_vistos = [];
+        
+        foreach ($todos_meus_cursos as $curso) {
+            $curso_id = $curso->id_curso;
+            if (!in_array($curso_id, $ids_vistos)) {
+                $cursos_unicos[] = $curso;
+                $ids_vistos[] = $curso_id;
+            }
+        }
+        ?>
+        
+        <?php if (count($cursos_unicos) > 0): ?>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <?php foreach ($meus_cursos_matriculados as $curso): ?>
+                <?php foreach ($cursos_unicos as $curso): ?>
                 <div class="bg-white rounded-lg border border-gray-200 p-4">
                     <div class="flex items-start space-x-4">
                         <?php 
-                        $imagem_curso = getImagemCurso($curso->imagem_curso);
+                        $imagem_curso = getImagemCurso($curso->imagem_curso, $curso->nome_curso, $curso->id_curso);
                         $caminho_completo = "../img/cursos/" . $imagem_curso;
                         ?>
                         <img src="<?php echo $caminho_completo; ?>" 
@@ -777,11 +951,27 @@ foreach ($cursos_disponiveis as $curso_db) {
                         <div class="flex-1">
                             <h3 class="font-semibold text-gray-800"><?php echo htmlspecialchars($curso->nome_curso); ?></h3>
                             <p class="text-sm text-gray-600 mt-1"><?php echo htmlspecialchars($curso->categoria); ?></p>
+                            
+                            <!-- Indicador se é criador ou aluno -->
+                            <div class="mt-2">
+                                <?php 
+                                $eh_criador = in_array($curso, $meus_cursos_criados);
+                                $cor_status = $eh_criador ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800';
+                                $texto_status = $eh_criador ? 'Criador' : 'Aluno';
+                                ?>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium <?php echo $cor_status; ?>">
+                                    <i class="fas <?php echo $eh_criador ? 'fa-crown' : 'fa-user-graduate'; ?> mr-1"></i>
+                                    <?php echo $texto_status; ?>
+                                </span>
+                            </div>
+                            
                             <div class="flex items-center justify-between mt-2">
-                                <span class="text-xs text-gray-500">Progresso: <?php echo $curso->progresso ?? 0; ?>%</span>
+                                <span class="text-xs text-gray-500">
+                                    Progresso: <?php echo isset($curso->progresso) ? $curso->progresso . '%' : '0%'; ?>
+                                </span>
                                 <a href="ver-curso.php?id=<?php echo $curso->id_curso; ?>" 
                                    class="bg-[#4A5D73] text-white px-3 py-1 rounded text-sm hover:bg-[#3A4A5C] transition-colors">
-                                    Continuar
+                                    <?php echo $eh_criador ? 'Gerenciar' : 'Continuar'; ?>
                                 </a>
                             </div>
                         </div>
@@ -792,8 +982,8 @@ foreach ($cursos_disponiveis as $curso_db) {
         <?php else: ?>
             <div class="text-center py-8">
                 <i class="fas fa-book-open text-4xl text-gray-400 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-600 mb-2">Nenhum curso matriculado</h3>
-                <p class="text-gray-500">Explore os cursos disponíveis e comece sua jornada de aprendizado!</p>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">Nenhum curso encontrado</h3>
+                <p class="text-gray-500">Cadastre um novo curso ou matricule-se em um curso disponível!</p>
             </div>
         <?php endif; ?>
     </div>
@@ -1005,5 +1195,45 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 </style>
+<script>
+// 🎯 ADICIONE ESTE CÓDIGO - Mostrar mensagens da sessão PHP
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (isset($_SESSION['mensagem']) && !empty($_SESSION['mensagem'])): ?>
+    setTimeout(() => {
+        mostrarMensagem('<?php echo addslashes($_SESSION['mensagem']); ?>', '<?php echo $_SESSION['tipo_mensagem'] ?? 'success'; ?>');
+    }, 500);
+    
+    <?php 
+    // Limpar a mensagem após mostrar
+    unset($_SESSION['mensagem']);
+    unset($_SESSION['tipo_mensagem']);
+    ?>
+    <?php endif; ?>
+});
+
+// Abas dos meus cursos
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Remover classe ativa de todas as abas
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('active', 'text-blue-600', 'border-blue-600');
+            b.classList.add('text-gray-600');
+        });
+        
+        // Adicionar classe ativa na aba clicada
+        this.classList.add('active', 'text-blue-600', 'border-blue-600');
+        this.classList.remove('text-gray-600');
+        
+        // Esconder todos os conteúdos
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Mostrar conteúdo da aba clicada
+        const tabId = this.getAttribute('data-tab');
+        document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+    });
+});
+</script>
 </body>
 </html>
