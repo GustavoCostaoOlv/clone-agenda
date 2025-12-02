@@ -1,260 +1,241 @@
-🚀 Sistema profissional para cadastro e gerenciamento de cursos online
+📘 Sistema de Gestão de Cursos Online
 
+Plataforma profissional para cadastro, gerenciamento e matrícula de cursos.
 
-📋 Índice
-✨ Sobre o Projeto
+📑 Sumário
 
-🎯 Funcionalidades
+Visão Geral
 
-🛠️ Tecnologias
+Principais Recursos
 
-🚀 Como Executar o Projeto
+Stack Tecnológica
 
-📁 Estrutura do Projeto
+Instalação e Configuração
 
-🎨 Screenshots
+Execução do Projeto
 
-📝 Fluxo do Sistema
+Estrutura de Diretórios
 
-🤝 Contribuindo
+Capturas de Tela
 
-📄 Licença
+Fluxo Operacional
 
-✨ Sobre o Projeto
-Sistema de cadastro de cursos desenvolvido em PHP com MySQL, herdado de uma agenda eletrônica original. Permite criar, gerenciar e visualizar cursos de diferentes categorias, com funcionalidades completas de autenticação de usuários, upload de imagens e matrículas.
+Contribuição
 
-Migração de Agenda → Sistema de Cursos:
-O sistema foi adaptado de uma agenda eletrônica para um sistema completo de gestão de cursos, mantendo a estrutura original do banco de dados enquanto implementa novas funcionalidades específicas para educação.
+Licença
 
-🎯 Funcionalidades
-👤 Autenticação & Usuários
-✅ Cadastro de usuários com foto de perfil
+Contato e Suporte
 
-✅ Login seguro com hash de senha
+📌 Visão Geral
 
-✅ Gestão de sessões e autenticação
+Este projeto é uma plataforma completa para gestão de cursos online, construída em PHP com MySQL e baseada na estrutura inicial de uma agenda digital.
+A aplicação evoluiu para um sistema profissional, com módulos de:
 
-✅ Recuperação de sessão automática
+Autenticação de usuários
 
-📚 Gerenciamento de Cursos
-✅ Cadastro completo de cursos (nome, categoria, nível, preço, etc.)
+Cadastro de cursos
 
-✅ Upload de imagens para os cursos
+Controle de matrículas
 
-✅ Categorização e filtragem por área
+Upload e gerenciamento de imagens
 
-✅ Pré-cadastro de cursos demonstrativos
+Painel administrativo responsivo
 
-✅ Edição e exclusão de cursos
+O sistema é projetado para ser simples de instalar, leve, organizado e escalável.
 
-🎓 Matrículas & Progresso
-✅ Matrícula automática do criador no curso
+🎯 Principais Recursos
+🔐 Autenticação e Usuários
 
-✅ Controle de progresso dos alunos
+Cadastro de usuários com foto de perfil
 
-✅ Visualização de cursos matriculados
+Login seguro com hashing de senha
 
-✅ Separação entre "Meus Cursos" e "Cursos Disponíveis"
+Gerenciamento de sessão
 
-🖼️ Sistema de Imagens
-✅ Upload de imagens com validação de formato
+Controle de acesso por autenticação
 
-✅ Geração automática de imagem padrão
+📚 Gestão de Cursos
 
-✅ Detecção automática de extensão real
+Registro completo de cursos (nome, categoria, nível, duração, descrição, preço etc.)
 
-✅ Fallback para imagem padrão quando necessário
+Edição e exclusão com validações
 
-🛠️ Tecnologias
-<div align="center">
-Tecnologia	Versão	Função
-PHP	8.0+	Backend e lógica de negócio
+Upload de imagens com detecção automática de extensão
+
+Listagem com filtros por categoria
+
+Cursos pré-cadastrados para demonstração
+
+🎓 Matrículas e Progresso
+
+Matrícula automática do criador do curso
+
+Visualização de cursos matriculados
+
+Separação entre Cursos Disponíveis e Meus Cursos
+
+Acompanhamento de progresso
+
+🖼️ Gerenciamento de Imagens
+
+Validação de formato
+
+Fallback automático para imagem padrão
+
+Upload protegido via GD Library
+
+Diretórios independentes para cursos e usuários
+
+🛠️ Stack Tecnológica
+Tecnologia	Versão	Descrição
+PHP	8.0+	Lógica backend
 MySQL	8.0+	Banco de dados
-Tailwind CSS	3.x	Estilização frontend
-Font Awesome	6.x	Ícones e elementos visuais
-PDO	-	Conexão segura com banco
-GD Library	-	Manipulação de imagens
-</div>
-🚀 Como Executar o Projeto
-Pré-requisitos
-Antes de começar, você precisa ter instalado:
-
-🐘 PHP 8.0 ou superior (com extensões: pdo_mysql, gd, mbstring)
-
-🗄️ MySQL 8.0 ou MariaDB 10.4+
-
-🌐 Servidor web (Apache, Nginx ou PHP built-in server)
-
-📦 Composer (opcional, para futuras dependências)
-
-📥 Passo 1: Clonar o Repositório
-bash
-# Clone o repositório
+Tailwind CSS	3.x	Estilização moderna
+Font Awesome	6.x	Ícones
+PDO	—	Conexão segura
+GD Library	—	Processamento de imagens
+⚙️ Instalação e Configuração
+1️⃣ Clonar o repositório
 git clone https://github.com/GustavoCostaoOlv/clone-agenda.git
-
-# Acesse a pasta do projeto
 cd clone-agenda
 
-# O projeto já está pronto para uso - não requer instalação de pacotes
-🗄️ Passo 2: Configurar o Banco de Dados
-Crie um banco de dados MySQL:
+2️⃣ Criar o banco de dados
+CREATE DATABASE sistema_cursos
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
 
-sql
-CREATE DATABASE sistema_cursos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-Importe a estrutura inicial (se houver arquivo SQL)
+3️⃣ Configurar credenciais
 
-Configure a conexão: Edite o arquivo config/conexao.php:
+Arquivo: config/conexao.php
 
-php
-<?php
 $host = "localhost";
 $user = "seu_usuario";
 $pass = "sua_senha";
 $dbname = "sistema_cursos";
 $port = 3306;
 
-try {
-    $conect = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $user, $pass);
-    // ... configurações PDO
-} catch(PDOException $e) {
-    // ... tratamento de erro
-}
-?>
-🌐 Passo 3: Configurar o Ambiente Web
-Opção A: Usando PHP Built-in Server
-bash
-# Na pasta raiz do projeto
+$conect = new PDO(
+    "mysql:host=$host;port=$port;dbname=$dbname",
+    $user,
+    $pass
+);
+
+4️⃣ Criar/ajustar permissões das pastas de imagem
+mkdir -p img/user img/cursos
+chmod 755 img/ img/user/ img/cursos/
+
+▶️ Execução do Projeto
+Opção A — Servidor embutido do PHP
 php -S localhost:8000
 
-# Acesse no navegador:
-# http://localhost:8000
-Opção B: Configurando Apache/XAMPP
-Copie a pasta do projeto para htdocs (XAMPP) ou www (Apache)
+
+Acesse: http://localhost:8000
+
+Opção B — XAMPP / Apache
+
+Mova o projeto para /htdocs/
 
 Acesse: http://localhost/clone-agenda
 
-⚙️ Passo 4: Configurações de Permissões
-bash
-# Dê permissão de escrita para as pastas de upload
-chmod 755 img/
-chmod 755 img/user/
-chmod 755 img/cursos/
-
-# Crie as pastas se não existirem
-mkdir -p img/user img/cursos
-🚀 Passo 5: Acessar o Sistema
-Acesse a URL do projeto no navegador
-
-Crie uma conta ou use credenciais existentes
-
-Comece a cadastrar cursos através do painel principal
-
-🔧 Troubleshooting (Solução de Problemas)
-❌ Erro de conexão com banco de dados
-php
-// Verifique em config/conexao.php:
-// - Usuário e senha corretos
-// - Nome do banco de dados existe
-// - Servidor MySQL está rodando
-❌ Erro de upload de imagens
-bash
-# Verifique permissões:
-ls -la img/
-
-# Deve mostrar:
-# drwxr-xr-x  cursos/
-# drwxr-xr-x  user/
-❌ Extensão GD não encontrada
-bash
-# No Ubuntu/Debian:
-sudo apt-get install php-gd
-
-# Reinicie o Apache:
-sudo systemctl restart apache2
-📁 Estrutura do Projeto
-text
+📂 Estrutura de Diretórios
 clone-agenda/
-├── 📂 config/
-│   └── conexao.php          # Configuração do banco de dados
-├── 📂 img/
-│   ├── 📂 cursos/           # Imagens dos cursos
-│   └── 📂 user/            # Fotos de perfil dos usuários
-├── 📂 paginas/
-│   ├── home.php            # Dashboard principal
-│   ├── del-contato.php     # Deleção de cursos/contatos
-│   └── ...                 # Outras páginas do sistema
-├── 📂 plugins/
-│   └── fontawesome-free/   # Ícones Font Awesome
-├── 📄 index.php            # Página de login
-├── 📄 cad_user.php         # Cadastro de usuários
-└── 📄 README.md            # Este arquivo
-🎨 Screenshots
-As capturas de tela mostram a interface moderna do sistema
+├── config/
+│   └── conexao.php
+├── img/
+│   ├── cursos/
+│   └── user/
+├── paginas/
+│   ├── home.php
+│   ├── del-contato.php
+│   └── ...
+├── plugins/
+│   └── fontawesome-free/
+├── index.php
+├── cad_user.php
+└── README.md
 
-Login Premium - Tela de acesso com design glassmorphism
+🖼️ Capturas de Tela
 
-Dashboard - Visão geral dos cursos criados e matriculados
+(Adicione imagens reais do sistema para deixar o README ainda mais profissional.)
 
-Cadastro de Cursos - Formulário completo com upload de imagem
+Tela de Login
 
-Listagem de Cursos - Grid responsivo com filtros por categoria
+Dashboard
 
-📝 Fluxo do Sistema
+Cadastro de Cursos
+
+Listagem e Pesquisa
+
+Área do Usuário
+
+📘 Fluxo Operacional
+
+Usuário cria uma conta
+
+Realiza login
+
+Acessa o painel
+
+Cadastra cursos
+
+Matricula-se ou gerencia seus cursos
+
+Acompanha progresso
+
+Edita ou exclui conteúdos quando necessário
+
+🤝 Contribuição
+
+Contribuições são bem-vindas. Para colaborar:
+
+git fork
+git checkout -b feature/NomeDaFeature
+git commit -m "Descrição da melhoria"
+git push origin feature/NomeDaFeature
 
 
+Abra um Pull Request descrevendo:
 
+A motivação
 
+O que foi alterado
 
+Como testar
 
+Reportar Bugs
 
-
-
-
-
-
-
-🤝 Contribuindo
-Contribuições são bem-vindas! Para contribuir:
-
-Fork o projeto
-
-Crie uma branch para sua feature (git checkout -b feature/AmazingFeature)
-
-Commit suas mudanças (git commit -m 'Add some AmazingFeature')
-
-Push para a branch (git push origin feature/AmazingFeature)
-
-Abra um Pull Request
-
-🐛 Reportando Bugs
-Encontrou um bug? Por favor:
-
-Verifique se já existe um issue aberto
-
-Crie um novo issue com:
-
-Descrição detalhada do problema
+Abra uma Issue com:
 
 Passos para reproduzir
 
-Comportamento esperado vs atual
+Comportamento esperado
 
-Screenshots (se aplicável)
+Logs e prints (se possível)
 
 📄 Licença
-Este projeto está licenciado sob a Licença MIT - veja o arquivo LICENSE para detalhes.
+
+Este projeto está licenciado sob a MIT License.
+Consulte o arquivo LICENSE para mais detalhes.
+
+📞 Contato e Suporte
+
+GitHub: (link do seu perfil)
+
+Issues: Utilize o painel de Issues do repositório
 
 <div align="center">
-Desenvolvido por Luiz Gustavo
-✨ Transformando agendas em plataformas educacionais ✨
+
+💙 Desenvolvido por Luiz Gustavo
+Transformando uma agenda em uma plataforma completa de cursos.
+
+⭐ Se este projeto for útil, considere deixar uma estrela!
 
 </div>
-📞 Suporte
-Issues do GitHub: Reportar problema
 
-Email: Entre em contato através do perfil do GitHub
+Se quiser, posso gerar:
 
-<div align="center">
-⭐ Se este projeto foi útil para você, considere dar uma estrela no repositório!
-
-</div>
+✅ versão em inglês
+✅ badges profissionais (PHP • MySQL • License • Status)
+✅ tabela de endpoints
+✅ diagrama de banco de dados
+✅ capa visual do README
