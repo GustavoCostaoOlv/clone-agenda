@@ -1,218 +1,254 @@
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>Editar Contato</h1>
-          </div>
-          
-        </div>
-      </div><!-- /.container-fluid -->
-    </section>
-    <?php
-      // Inclui o arquivo de conexão com o banco de dados
-      include('../config/conexao.php');
+<?php
+session_start();
+include_once('../config/conexao.php');
 
-      // Verifica se o parâmetro 'id' foi passado via GET
-      if (!isset($_GET['id'])) {
-          // Se não foi passado, redireciona para a página home.php
-          header("Location: home.php");
-          exit; // Encerra o script
-      }
+// 🐛 DEBUG - ADICIONE ESTAS 5 LINHAS
+error_log("=== DEBUG UPDATE CURSO ===");
+error_log("GET: " . print_r($_GET, true));
+error_log("POST: " . print_r($_POST, true));
+error_log("FILES: " . print_r($_FILES, true));
+error_log("SESSION id_user: " . ($_SESSION['senhaUser'] ?? 'NÃO EXISTE'));
 
-      // Obtém o valor do parâmetro 'id' e filtra como um inteiro
-      $id = filter_input(INPUT_GET, 'id', FILTER_DEFAULT);
+// Verificar se o usuário está logado
+if (!isset($_SESSION['loginUser'])) {
+    header("Location: ../index.php?acao=negado");
+    exit;
+}
 
-      // Prepara e executa a consulta para selecionar o contato com base no 'id'
-      $select = "SELECT * FROM tb_contatos WHERE id_contatos=:id";
-      try {
-          $resultado = $conect->prepare($select);
-          $resultado->bindParam(':id', $id, PDO::PARAM_INT);
-          $resultado->execute();
+// Verificar se o ID do curso foi passado
+if (!isset($_GET['id']) || empty($_GET['id'])) {
+    header("Location: ../index.php");
+    exit;
+}
 
-          // Verifica se foi encontrado algum contato com o 'id' especificado
-          $contar = $resultado->rowCount();
-          if ($contar > 0) {
-              // Se encontrado, obtém os dados do contato
-              $show = $resultado->fetch(PDO::FETCH_OBJ);
-              $idCont = $show->id_contatos;
-              $nome = $show->nome_contatos;
-              $fone = $show->fone_contatos;
-              $email = $show->email_contatos;
-              $foto = $show->foto_contatos;'"style="width:250px; border-radius:100%; padding-top:15px;">';
-          } else {
-              // Se nenhum contato foi encontrado, exibe uma mensagem de erro
-              echo '<div class="alert alert-danger">Não há dados com o id informado!</div>';
-          }
-      } catch (PDOException $e) {
-          // Em caso de erro na consulta PDO, exibe a mensagem de erro
-          echo "<strong>ERRO DE SELECT NO PDO: </strong>" . $e->getMessage();
-      }
-      
-      ?>
+$id_curso = (int)$_GET['id'];
+$id_user = $_SESSION['senhaUser']; // ID do usuário logado
 
-    <!-- Main content -->
-    <section class="content">
-      <div class="container-fluid">
-      
-        <div class="row">
-          <!-- left column -->
-          <div class="col-md-6">
-            <!-- general form elements -->
-            <div class="card card-primary">
-              <div class="card-header">
-                <h3 class="card-title">editar contato</h3>
-              </div>
-              <!-- /.card-header -->
-              <!-- form start -->
-              <form role="form" action="" method="post" enctype="multipart/form-data">
-                <div class="card-body">
-                  <div class="form-group">
-                    <label for="exampleInputEmail1">Nome</label>
-                    <input type="text" class="form-control" name="nome" id="nome" required value="<?php echo $nome; ?>">
-                  </div>
-                  <div class="form-group">
-                    <label for="exampleInputPassword1">Telefone</label>
-                    <input type="text" class="form-control" name="telefone" id="telefone" required value="<?php echo $fone; ?>">
-                  </div>
-                  <div class="form-group">
-                    <label for="exampleInputEmail1">Endereço de E-mail</label>
-                    <input type="email" class="form-control" name="email" id="email" required value="<?php echo $email; ?>">
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="exampleInputFile">Foto do contato</label>
-                    <div class="input-group">
-                      <div class="custom-file">
-                        <input type="file" class="custom-file-input" name="foto" id="foto">
-                        <label class="custom-file-label" for="exampleInputFile">Arquivo de imagem</label>
-                      </div>
-                      
-                    </div>
-                  </div>
-                </div>
-                <!-- /.card-body -->
+// Buscar informações do curso
+$curso = null;
+try {
+    $select = "SELECT * FROM tb_cursos WHERE id_curso = :id_curso AND id_user = :id_user";
+    $result = $conect->prepare($select);
+    $result->bindParam(':id_curso', $id_curso, PDO::PARAM_INT);
+    $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
+    $result->execute();
+    
+    if ($result->rowCount() > 0) {
+        $curso = $result->fetch(PDO::FETCH_OBJ);
+    } else {
+        // Curso não encontrado ou não pertence ao usuário
+        header("Location: ../index.php?erro=curso_nao_encontrado");
+        exit;
+    }
+} catch (PDOException $e) {
+    error_log("Erro ao buscar curso: " . $e->getMessage());
+    header("Location: ../index.php?erro=busca_curso");
+    exit;
+}
 
-                <div class="card-footer">
-                  <button type="submit" name="upContato" class="btn btn-primary">Finalizar edição do contato</button>
-                </div>
-              </form>
-              <?php
-               // Verifica se o formulário foi submetido
-               if (isset($_POST['upContato'])) {
-                // Obtém os dados do formulário
-                $nome = $_POST['nome'];
-                $fone = $_POST['telefone'];
-                $email = $_POST['email'];
+// Processar atualização do curso
+if (isset($_POST['botao'])) {
+    $nome_curso = trim($_POST['nome'] ?? '');
+    $carga_horaria = trim($_POST['carga_horaria'] ?? '');
+    $categoria = trim($_POST['categoria'] ?? '');
+    $descricao = trim($_POST['descricao'] ?? '');
+    $nivel = trim($_POST['nivel'] ?? '');
+    $preco = floatval($_POST['preco'] ?? 0);
+    
+    // Validação
+    $campos_faltantes = [];
+    if (empty($nome_curso)) $campos_faltantes[] = "Nome do Curso";
+    if (empty($carga_horaria)) $campos_faltantes[] = "Carga Horária";
+    if (empty($categoria)) $campos_faltantes[] = "Categoria";
+    if (empty($nivel)) $campos_faltantes[] = "Nível";
 
-                // Verifica se foi feito upload de uma nova foto
-                if (!empty($_FILES['foto']['name'])) {
-                    // Define os formatos permitidos para a foto
-                    $formatP = array("png", "jpg", "jpeg", "gif");
-                    $extensao = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
+    if (!empty($campos_faltantes)) {
+        $mensagem_erro = "Preencha os campos: " . implode(", ", $campos_faltantes);
+        $_SESSION['mensagem'] = $mensagem_erro;
+        $_SESSION['tipo_mensagem'] = "error";
+    } else {
+        // Upload da imagem (se houver nova)
+        $foto_curso = $curso->imagem_curso; // Manter a imagem atual por padrão
+        
+        if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+            $formatosPermitidos = array("png", "jpg", "jpeg", "gif", "webp");
+            $extensao = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
 
-                    // Verifica se a extensão do arquivo está entre os formatos permitidos
-                    if (in_array($extensao, $formatP)) {
-                        $pasta = "../img/cont/";
-                        $temporario = $_FILES['foto']['tmp_name'];
-                        $novoNome = uniqid() . ".{$extensao}";
-
-                        // Move o arquivo temporário para a pasta de destino
-                        if (move_uploaded_file($temporario, $pasta . $novoNome)) {
-                            // Se o upload foi bem-sucedido, verifica se há uma foto antiga para deletar
-                            if ($foto && file_exists($pasta . $foto)) {
-                                unlink($pasta . $foto); // Deleta a foto antiga
-                            }
-                        } else {
-                            $mensagem = "Erro, não foi possível fazer o upload do arquivo!";
-                        }
-                    } else {
-                        echo "Formato inválido"; // Se o formato do arquivo não é permitido, exibe mensagem de erro
-                    }
-                } else {
-                    $novoNome = $foto; // Se não foi feito upload de nova foto, mantém o nome da foto antiga
+            if (in_array($extensao, $formatosPermitidos)) {
+                $pasta = "../img/cursos/";
+                
+                if (!is_dir($pasta)) {
+                    mkdir($pasta, 0777, true);
                 }
+                
+                $temporario = $_FILES['foto']['tmp_name'];
+                $nome_sem_espacos = preg_replace('/[^a-zA-Z0-9]/', '-', $nome_curso);
+                $nome_sem_espacos = strtolower($nome_sem_espacos);
+                $novoNome = $nome_sem_espacos . '-' . uniqid() . ".$extensao";
 
-                // Prepara e executa o comando SQL para atualizar os dados do contato
-                $update = "UPDATE tb_contatos SET nome_contatos=:nome, fone_contatos=:fone, email_contatos=:email, foto_contatos=:foto WHERE id_contatos=:id";
-                try {
-                    $result = $conect->prepare($update);
-                    $result->bindParam(':id', $id, PDO::PARAM_STR);
-                    $result->bindParam(':nome', $nome, PDO::PARAM_STR);
-                    $result->bindParam(':fone', $fone, PDO::PARAM_STR);
-                    $result->bindParam(':email', $email, PDO::PARAM_STR);
-                    $result->bindParam(':foto', $novoNome, PDO::PARAM_STR);
-                    $result->execute();
-
-                    // Verifica se a atualização foi bem-sucedida
-                    $contar = $result->rowCount();
-                    if ($contar > 0) {
-                        // Se sim, exibe uma mensagem de sucesso e redireciona após 5 segundos
-                        echo '<div class="container">
-                                  <div class="alert alert-success alert-dismissible">
-                                      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                                      <h5><i class="icon fas fa-check"></i> Ok !!!</h5>
-                                      Os dados foram atualizados com sucesso.
-                                  </div>
-                              </div>';
-                        header("Refresh: 1, home.php");
-                    } else {
-                        // Se não, exibe uma mensagem de erro
-                        echo '<div class="alert alert-danger alert-dismissible">
-                                  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                                  <h5><i class="icon fas fa-check"></i> Erro !!!</h5>
-                                  Não foi possível atualizar os dados.
-                              </div>';
+                if (move_uploaded_file($temporario, $pasta . $novoNome)) {
+                    $foto_curso = $novoNome;
+                    
+                    // Se tinha imagem antiga e não é a padrão, pode deletar
+                    if ($curso->imagem_curso !== 'curso-padrao.jpg' && $curso->imagem_curso !== $novoNome) {
+                        $imagem_antiga = $pasta . $curso->imagem_curso;
+                        if (file_exists($imagem_antiga)) {
+                            unlink($imagem_antiga);
+                        }
                     }
-                } catch (PDOException $e) {
-                    // Em caso de erro PDO durante a atualização, exibe a mensagem de erro
-                    echo "<strong>ERRO DE PDO= </strong>" . $e->getMessage();
                 }
             }
-              ?>
-            </div>
-</div>
-            
-            <div class="col-md-6">
-              <!-- /.card-header -->
-              <div class="card-body p-0" style="text-align: center; margin-bottom: 98px">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Dados do Contatos</h3>
-                </div>
-                <!-- /.card-header -->
-                <div class="card-body p-0" style="text-align: center; margin-bottom: 98px">
-                <?php
-                        // Verifica se a variável $foto_user é igual a 'avatar-padrao.png'
-                        if ($show->foto_contatos == 'avatar-padrao.png') {
-                            // Exibe a imagem do avatar padrão
-                            echo '<img src="../img/avatar_p/' . $show->foto_contatos . '" alt="' . $show->foto_contatos . '" title="' . $show->foto_contatos . '" style="width: 200px; border-radius: 100%; margin-top: 30px">';
-                        } else {
-                            // Exibe a imagem do usuário
-                            echo '<img src="../img/cont/' . $show->foto_contatos . '" alt="' . $show->foto_contatos . '" title="' . $show->foto_contatos . '" style="width: 200px; border-radius: 100%; margin-top: 30px">';
-                        }
-                        ?>  
-                      
-                  <h1><?php echo $nome; ?></h1>
-                  <strong><?php echo $fone; ?></strong>
-                  <p><?php echo $email; ?></p>
-                </div>
-                <!-- /.card-body -->
-            </div>
-              <!-- /.card-body -->
-            </div>
-            <!-- /.card -->
-            </div>
+        }
 
-          </div>
-          <!--/.col (right) -->
-        </div>
-        <!-- /.row -->
-      </div><!-- /.container-fluid -->
-    </section>
-    <!-- /.content -->
-  </div>
-  <!-- /.content-wrapper -->
+        // Atualizar no banco
+        try {
+            $update = "UPDATE tb_cursos SET 
+                      nome_curso = :nome, 
+                      carga_horaria = :carga, 
+                      categoria = :categoria, 
+                      descricao = :descricao, 
+                      nivel = :nivel, 
+                      preco = :preco, 
+                      imagem_curso = :foto 
+                      WHERE id_curso = :id_curso AND id_user = :id_user";
+
+            $result = $conect->prepare($update);
+            $result->bindParam(':nome', $nome_curso, PDO::PARAM_STR);
+            $result->bindParam(':carga', $carga_horaria, PDO::PARAM_STR);
+            $result->bindParam(':categoria', $categoria, PDO::PARAM_STR);
+            $result->bindParam(':descricao', $descricao, PDO::PARAM_STR);
+            $result->bindParam(':nivel', $nivel, PDO::PARAM_STR);
+            $result->bindParam(':preco', $preco);
+            $result->bindParam(':foto', $foto_curso, PDO::PARAM_STR);
+            $result->bindParam(':id_curso', $id_curso, PDO::PARAM_INT);
+            $result->bindParam(':id_user', $id_user, PDO::PARAM_INT);
+            
+            if ($result->execute()) {
+                $_SESSION['mensagem'] = "Curso atualizado com sucesso!";
+                $_SESSION['tipo_mensagem'] = "success";
+                header("Location: ../index.php");
+                exit;
+            } else {
+                $_SESSION['mensagem'] = "Erro ao atualizar curso. Tente novamente.";
+                $_SESSION['tipo_mensagem'] = "error";
+            }
+            
+        } catch (PDOException $e) {
+            error_log("❌ ERRO PDO ao atualizar: " . $e->getMessage());
+            $_SESSION['mensagem'] = "Erro no banco de dados: " . $e->getMessage();
+            $_SESSION['tipo_mensagem'] = "error";
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editar Curso</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   
+  <style>
+    body {
+      background: linear-gradient(135deg, #4A5D73 0%, #324151 100%);
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+<div class="w-full max-w-6xl">
+  <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fas fa-edit text-white text-2xl mr-3"></i>
+          <h2 class="text-2xl font-bold text-white">Editar Curso</h2>
+        </div>
+        <a href="../index.php" class="text-white hover:text-gray-200 transition-colors">
+          <i class="fas fa-times text-xl"></i>
+        </a>
+      </div>
+      <p class="text-blue-100 mt-2">Atualize as informações do curso</p>
+    </div>
+
+    <form action="" method="post" enctype="multipart/form-data" class="p-8 space-y-6">
+      <!-- Nome do Curso -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-3">Nome do Curso</label>
+        <input type="text" name="nome" required
+               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+               value="<?php echo htmlspecialchars($curso->nome_curso); ?>">
+      </div>
+
+      <!-- Carga Horária -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-3">Carga Horária</label>
+        <input type="text" name="carga_horaria" required
+               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+               value="<?php echo htmlspecialchars($curso->carga_horaria); ?>">
+      </div>
+
+      <!-- Categoria -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-3">Categoria</label>
+        <select name="categoria" required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+          <option value="">Selecione uma categoria</option>
+          <option value="Tecnologia" <?php echo $curso->categoria == 'Tecnologia' ? 'selected' : ''; ?>>Tecnologia</option>
+          <option value="Negócios" <?php echo $curso->categoria == 'Negócios' ? 'selected' : ''; ?>>Negócios</option>
+          <option value="Marketing" <?php echo $curso->categoria == 'Marketing' ? 'selected' : ''; ?>>Marketing</option>
+          <option value="Artes" <?php echo $curso->categoria == 'Artes' ? 'selected' : ''; ?>>Artes</option>
+          <option value="Desenvolvimento Pessoal" <?php echo $curso->categoria == 'Desenvolvimento Pessoal' ? 'selected' : ''; ?>>Desenvolvimento Pessoal</option>
+        </select>
+      </div>
+
+      <!-- Descrição -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-3">Descrição</label>
+        <textarea name="descricao" rows="4" required
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"><?php echo htmlspecialchars($curso->descricao); ?></textarea>
+      </div>
+
+      <!-- Nível -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-3">Nível</label>
+        <select name="nivel" required
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+          <option value="">Selecione o nível</option>
+          <option value="Iniciante" <?php echo $curso->nivel == 'Iniciante' ? 'selected' : ''; ?>>Iniciante</option>
+          <option value="Intermediário" <?php echo $curso->nivel == 'Intermediário' ? 'selected' : ''; ?>>Intermediário</option>
+          <option value="Avançado" <?php echo $curso->nivel == 'Avançado' ? 'selected' : ''; ?>>Avançado</option>
+        </select>
+      </div>
+
+      <!-- Preço -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-3">Preço (R$)</label>
+        <input type="number" step="0.01" name="preco"
+               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+               value="<?php echo number_format($curso->preco, 2, '.', ''); ?>">
+      </div>
+
+      <!-- Imagem -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-3">Imagem do curso</label>
+        <input type="file" name="foto" accept="image/*"
+               class="w-full px-4 py-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700">
+        <p class="text-xs text-gray-500 mt-2">Atual: <?php echo $curso->imagem_curso; ?></p>
+      </div>
+
+      <!-- Botão -->
+      <div>
+        <button type="submit" name="botao"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+          <i class="fas fa-save mr-2"></i>Salvar Alterações
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

@@ -7,10 +7,12 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// 🎯 DEBUG MENSAGENS - REMOVA DEPOIS
-error_log("=== 🔍 VERIFICANDO MENSAGENS ===");
-error_log("SESSION mensagem: " . ($_SESSION['mensagem'] ?? 'NÃO EXISTE'));
-error_log("SESSION tipo_mensagem: " . ($_SESSION['tipo_mensagem'] ?? 'NÃO EXISTE'));
+// DEBUG - Adicione estas linhas
+error_log("=== 🐛 DEBUG UPDATE CURSO INICIADO ===");
+error_log("GET: " . print_r($_GET, true));
+error_log("POST: " . print_r($_POST, true));
+error_log("FILES: " . print_r($_FILES, true));
+error_log("SESSION id_user: " . ($_SESSION['senhaUser'] ?? 'NÃO EXISTE'));
 
 $_SESSION['mensagem'] = '';
 $_SESSION['tipo_mensagem'] = '';
@@ -975,19 +977,30 @@ foreach ($cursos_disponiveis as $curso_db) {
         Progresso: <?php echo isset($curso->progresso) ? $curso->progresso . '%' : '0%'; ?>
     </span>
     <div class="flex space-x-2">
-        <!-- BOTÃO DE DELETAR - APENAS PARA CRIADORES -->
+        <!-- BOTÃO DE EDITAR - APENAS PARA CRIADORES -->
         <?php if ($eh_criador): ?>
+        <button onclick="window.location.href='<?php echo $_SERVER['PHP_SELF']; ?>?acao=editar&id=<?php echo $curso->id_curso; ?>'" 
+        class="group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-2 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+        title="Editar curso">
+    <i class="fas fa-edit text-xs"></i>
+    <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+        Editar Curso
+    </span>
+</button>
+        
+        <!-- BOTÃO DE DELETAR - APENAS PARA CRIADORES -->
         <button onclick="confirmarDelecao(<?php echo $curso->id_curso; ?>, '<?php echo htmlspecialchars($curso->nome_curso); ?>')" 
                 class="group relative bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white p-2 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
                 title="Deletar curso">
             <i class="fas fa-trash-alt text-xs"></i>
-            <span class="absolute -top-8 -left-2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            <span class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
                 Deletar Curso
             </span>
         </button>
         <?php endif; ?>
     </div>
 </div>
+
                         </div>
                     </div>
                 </div>
@@ -1309,6 +1322,12 @@ function testarCaminho() {
 
 console.log('✅ DEBUG: Função testarCaminho() carregada!');
 console.log('💡 Execute no console: testarCaminho()');
+
+// Função para editar curso
+function editarCurso(id_curso) {
+    // Usando a rota existente
+    window.location.href = 'index.php?acao=editar&id=' + id_curso;
+}
 </script>
 </body>
 </html>
