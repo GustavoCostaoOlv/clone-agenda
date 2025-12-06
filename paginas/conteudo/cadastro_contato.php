@@ -1,47 +1,29 @@
 <?php
 include_once('../config/conexao.php');
-error_log("📁 CAMINHO DO LOG: " . ini_get('error_log'));
 
 // 🔒 INICIAR SESSÃO SE NÃO ESTIVER INICIADA
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// DEBUG - Adicione estas linhas
-error_log("=== 🐛 DEBUG UPDATE CURSO INICIADO ===");
-error_log("GET: " . print_r($_GET, true));
-error_log("POST: " . print_r($_POST, true));
-error_log("FILES: " . print_r($_FILES, true));
-error_log("SESSION id_user: " . ($_SESSION['senhaUser'] ?? 'NÃO EXISTE'));
 
 $_SESSION['mensagem'] = '';
 $_SESSION['tipo_mensagem'] = '';
-
-
-// DEBUG - VERIFICAR USUÁRIO DA SESSÃO
-error_log("=== 🔍 DEBUG SESSÃO USUÁRIO ===");
-error_log("SESSION: " . print_r($_SESSION, true));
 
 // Verificar se existe algum usuário na tabela tb_user
 try {
     $verifica_user = $conect->query("SELECT id_user FROM tb_user LIMIT 1");
     if ($verifica_user->rowCount() > 0) {
         $user_example = $verifica_user->fetch(PDO::FETCH_OBJ);
-        error_log("✅ Existe usuário na tabela. Exemplo ID: " . $user_example->id_user);
+
     } else {
-        error_log("❌ Nenhum usuário na tabela tb_user");
     }
 } catch (PDOException $e) {
-    error_log("❌ Erro ao verificar tb_user: " . $e->getMessage());
 }
-
-// DEBUG - VERIFICAR ESTRUTURA DO BANCO
-error_log("=== VERIFICANDO BANCO DE DADOS ===");
 try {
     // Verificar se tabela de cursos existe
     $tabela_existe = $conect->query("SHOW TABLES LIKE 'tb_cursos'");
     if ($tabela_existe->rowCount() == 0) {
-        error_log("❌ TABELA tb_cursos NÃO EXISTE!");
         // Criar tabela se não existir
        $criar_tabela = "
 CREATE TABLE IF NOT EXISTS tb_cursos (
@@ -57,24 +39,19 @@ CREATE TABLE IF NOT EXISTS tb_cursos (
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
         $conect->exec($criar_tabela);
-        error_log("✅ TABELA tb_cursos CRIADA COM SUCESSO!");
     } else {
-        error_log("✅ TABELA tb_cursos EXISTE");
     }
     
     // Verificar estrutura da tabela
 $estrutura = $conect->query("DESCRIBE tb_cursos");
-error_log("ESTRUTURA: " . print_r($estrutura->fetchAll(PDO::FETCH_ASSOC), true));
 
 } catch (PDOException $e) {
-    error_log("ERRO BANCO: " . $e->getMessage());
 }
 
 // === 🖼️ VERIFICAR PASTA DE IMAGENS - ADICIONE ESTE BLOCO ===
 $pasta_img = "../img/cursos/";
 if (!is_dir($pasta_img)) {
     mkdir($pasta_img, 0777, true);
-    error_log("✅ PASTA DE IMAGENS CRIADA: " . $pasta_img);
 }
 
 $imagem_padrao = $pasta_img . "curso-padrao.jpg";
@@ -89,19 +66,12 @@ if (!file_exists($imagem_padrao)) {
             imagestring($imagem, 2, 10, 45, "CURSO", $cor_texto);
             imagejpeg($imagem, $imagem_padrao);
             imagedestroy($imagem);
-            error_log("✅ IMAGEM PADRÃO CRIADA COM GD");
         } catch (Exception $e) {
-            error_log("⚠️ Erro ao criar imagem com GD: " . $e->getMessage());
         }
     } else {
-        // GD não disponível - pular criação
-        error_log("⚠️ GD não disponível - pulando criação de imagem");
     }
 }
 
-// 🎯 SOLUÇÃO COMPLETA: RESOLVER PROBLEMA DO USUÁRIO
-error_log("=== 🔍 DEBUG SESSÃO USUÁRIO ===");
-error_log("SESSION: " . print_r($_SESSION, true));
 
 // 1. Primeiro tentar pegar da sessão
 $id_user = null;
@@ -122,13 +92,10 @@ if ($id_user) {
         $verifica_user_especifico->execute([$id_user]);
         
         if ($verifica_user_especifico->rowCount() == 0) {
-            error_log("❌ Usuário da sessão ID {$id_user} NÃO EXISTE na tb_user");
             $id_user = null; // Invalidar o ID
         } else {
-            error_log("✅ Usuário da sessão ID {$id_user} EXISTE na tb_user");
         }
     } catch (PDOException $e) {
-        error_log("❌ Erro ao verificar usuário específico: " . $e->getMessage());
         $id_user = null;
     }
 }
@@ -143,37 +110,28 @@ if (!$id_user) {
             // Usar o primeiro usuário existente
             $user_existente = $verifica_qualquer_user->fetch(PDO::FETCH_OBJ);
             $id_user = $user_existente->id_user;
-            error_log("✅ Usando usuário existente ID: " . $id_user);
             
         } else {
-            // Criar usuário padrão
-            error_log("❌ Nenhum usuário na tabela tb_user. Criando usuário padrão...");
             
             $criar_user = "INSERT INTO tb_user (nome, email, senha, data_cadastro) 
                           VALUES ('Usuário Padrão', 'default@email.com', '123456', NOW())";
             $conect->exec($criar_user);
             $id_user = $conect->lastInsertId();
             
-            error_log("✅ USUÁRIO PADRÃO CRIADO COM ID: " . $id_user);
         }
         
     } catch (PDOException $e) {
-        error_log("❌ Erro crítico ao verificar/criar usuário: " . $e->getMessage());
         // Último recurso - tentar usar ID 1
         $id_user = 1;
-        error_log("⚠️ Usando ID fallback: " . $id_user);
     }
 }
 
 // 4. Garantir que o ID é inteiro
 $id_user = (int)$id_user;
-error_log("🎯 ID USER FINAL: " . $id_user);
 
 // Função para detectar automaticamente a extensão real da imagem
 function getImagemCurso($imagem_curso, $nome_curso = '', $id_curso = 0) {
-    error_log("🔍 Buscando imagem para Curso ID: {$id_curso}, Nome: {$nome_curso}");
-    
-    // Lista oficial dos nomes base (sem extensão)
+    // Lista oficial dos nomes base (sem extensão) para cursos pré-definidos
     $nomes_base_por_id = [
         2 => 'desenvolvimento-web',
         3 => 'python-data-science',
@@ -188,7 +146,7 @@ function getImagemCurso($imagem_curso, $nome_curso = '', $id_curso = 0) {
     // Lista de todas as extensões possíveis
     $extensoes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-    // Se o ID está no array, tenta achar o arquivo
+    // 1. PRIMEIRO: Se o ID está no array de cursos pré-definidos, tenta achar o arquivo
     if (isset($nomes_base_por_id[$id_curso])) {
         $nome_base = trim($nomes_base_por_id[$id_curso]);
 
@@ -197,168 +155,26 @@ function getImagemCurso($imagem_curso, $nome_curso = '', $id_curso = 0) {
             $caminho = "../img/cursos/" . $arquivo;
 
             if (file_exists($caminho)) {
-                error_log("✅ Encontrado automaticamente: {$arquivo}");
-                return $arquivo;
+                return $arquivo; // ✅ ADICIONE ESTE RETURN
             }
         }
-
-        // Nenhuma imagem encontrada para esse ID
-        error_log("❌ Nenhuma imagem encontrada para {$nome_base} em qualquer extensão.");
     }
 
-    // Se existe imagem salva no banco, usa ela
+    // 2. SEGUNDO: Se existe imagem salva no banco, usa ela
     if (!empty($imagem_curso) && $imagem_curso !== 'curso-padrao.jpg') {
         $caminho = "../img/cursos/" . $imagem_curso;
 
         if (file_exists($caminho)) {
-            error_log("✅ Usando imagem do banco: {$imagem_curso}");
-            return $imagem_curso;
-        } else {
-            error_log("⚠️ Imagem no banco não encontrada: {$imagem_curso}");
+            return $imagem_curso; // ✅ ADICIONE ESTE RETURN
         }
     }
 
-    // Última opção
-    error_log("⚠️ Usando imagem padrão");
+    // 3. ÚLTIMA OPÇÃO: imagem padrão
     return 'curso-padrao.jpg';
 }
 
-// 🔍 SOLUÇÃO 3: DEBUG UPLOAD - COLE AQUI
-function debugUpload() {
-    $pasta = "../img/cursos/";
-    
-    error_log("=== 🔍 DEBUG UPLOAD ===");
-    error_log("Pasta: " . $pasta);
-    error_log("Existe: " . (is_dir($pasta) ? 'SIM' : 'NÃO'));
-    error_log("É gravável: " . (is_writable($pasta) ? 'SIM' : 'NÃO'));
-    
-    if (is_dir($pasta)) {
-        error_log("Permissões: " . substr(sprintf('%o', fileperms($pasta)), -4));
-        
-        // Listar arquivos na pasta
-        $arquivos = scandir($pasta);
-        $arquivos_validos = array_filter($arquivos, function($arquivo) {
-            return $arquivo != '.' && $arquivo != '..';
-        });
-        
-        error_log("Arquivos na pasta cursos:");
-        foreach ($arquivos_validos as $arquivo) {
-            $caminho = $pasta . $arquivo;
-            $tamanho = filesize($caminho);
-            error_log("  📄 {$arquivo} ({$tamanho} bytes)");
-        }
-    }
-}
-
-
-// DEBUG CRÍTICO: Verificar o que está acontecendo com cada curso (VERSÃO SEGURA)
-function debugImagensCursos() {
-    global $cursos_disponiveis;
-    
-    error_log("=== 🎯 DEBUG CRÍTICO - VERIFICANDO IMAGENS ===");
-    
-    // Verifica se a variável existe e é um array
-    if (!isset($cursos_disponiveis) || !is_array($cursos_disponiveis)) {
-        error_log("❌ ERRO: \$cursos_disponiveis não está definida ou não é um array");
-        error_log("Tipo: " . gettype($cursos_disponiveis));
-        return;
-    }
-    
-    if (empty($cursos_disponiveis)) {
-        error_log("⚠️ AVISO: \$cursos_disponiveis está vazia");
-        return;
-    }
-    
-    error_log("Total de cursos encontrados: " . count($cursos_disponiveis));
-    
-    foreach ($cursos_disponiveis as $index => $curso) {
-        // Verifica se o curso é um objeto válido
-        if (!is_object($curso)) {
-            error_log("❌ Curso no índice {$index} não é um objeto: " . gettype($curso));
-            continue;
-        }
-        
-        // Verifica se as propriedades existem
-        if (!property_exists($curso, 'id_curso') || !property_exists($curso, 'nome_curso') || !property_exists($curso, 'imagem_curso')) {
-            error_log("❌ Curso no índice {$index} não tem propriedades necessárias");
-            continue;
-        }
-        
-        $imagem_encontrada = getImagemCurso($curso->imagem_curso, $curso->nome_curso, $curso->id_curso);
-        $caminho_encontrado = "../img/cursos/" . $imagem_encontrada;
-        $existe = file_exists($caminho_encontrado) ? "✅ EXISTE" : "❌ NÃO EXISTE";
-        
-        error_log("Curso ID {$curso->id_curso}: {$curso->nome_curso}");
-        error_log("  - Imagem no banco: {$curso->imagem_curso}");
-        error_log("  - Imagem encontrada: {$imagem_encontrada}");
-        error_log("  - Status: {$existe}");
-        error_log("  ---");
-    }
-}
-
-debugImagensCursos();
-
-// DEBUG: Verificar estado do banco de dados
-function debugEstadoBanco() {
-    global $conect;
-    
-    error_log("=== 🗄️ DEBUG ESTADO DO BANCO ===");
-    
-    try {
-        $result = $conect->query("SELECT COUNT(*) as total FROM tb_cursos");
-        $total = $result->fetch(PDO::FETCH_OBJ)->total;
-        error_log("Total de cursos no banco: {$total}");
-        
-        // Ver cursos específicos
-        $cursos = $conect->query("SELECT id_curso, nome_curso, imagem_curso FROM tb_cursos WHERE id_curso BETWEEN 2 AND 9 ORDER BY id_curso");
-        $cursos_data = $cursos->fetchAll(PDO::FETCH_OBJ);
-        
-        error_log("Cursos ID 2-9 no banco:");
-        foreach ($cursos_data as $curso) {
-            error_log("  ID {$curso->id_curso}: {$curso->nome_curso} -> {$curso->imagem_curso}");
-        }
-        
-    } catch (PDOException $e) {
-        error_log("❌ ERRO AO ACESSAR BANCO: " . $e->getMessage());
-    }
-}
-
-debugEstadoBanco();
-
-// DEBUG: Verificar arquivos reais na pasta
-function debugArquivosPasta() {
-    $pasta = "../img/cursos/";
-    
-    error_log("=== 📁 DEBUG ARQUIVOS NA PASTA ===");
-    
-    if (!is_dir($pasta)) {
-        error_log("❌ PASTA NÃO EXISTE: {$pasta}");
-        return;
-    }
-    
-    $arquivos = scandir($pasta);
-    $arquivos_validos = array_filter($arquivos, function($arquivo) {
-        return $arquivo != '.' && $arquivo != '..';
-    });
-    
-    error_log("Arquivos encontrados na pasta:");
-    foreach ($arquivos_validos as $arquivo) {
-        $caminho = $pasta . $arquivo;
-        $tamanho = filesize($caminho);
-        error_log("  📄 {$arquivo} ({$tamanho} bytes)");
-    }
-}
-
-debugArquivosPasta();
-
-// DEBUG - VERIFICAR O QUE ESTÁ CHEGANDO NO POST
-error_log("=== DEBUG FORMULÁRIO ===");
-error_log("POST: " . print_r($_POST, true));
-error_log("FILES: " . print_r($_FILES, true));
-
 // CORREÇÃO: PROCESSAR CADASTRO DO CURSO - VERSÃO SIMPLIFICADA
 if (isset($_POST['botao'])) {
-    error_log("=== TENTATIVA DE CADASTRO INICIADA ===");
     
     // Sanitizar dados com valores padrão
     $nome_curso = trim($_POST['nome'] ?? '');
@@ -367,13 +183,6 @@ if (isset($_POST['botao'])) {
     $descricao = trim($_POST['descricao'] ?? '');
     $nivel = trim($_POST['nivel'] ?? '');
     $preco = floatval($_POST['preco'] ?? 0);
-
-    error_log("Dados recebidos:");
-    error_log("Nome: '$nome_curso'");
-    error_log("Carga: '$carga_horaria'");
-    error_log("Categoria: '$categoria'");
-    error_log("Nível: '$nivel'");
-    error_log("Preço: '$preco'");
 
     // VALIDAÇÃO SIMPLIFICADA - Vamos ver qual campo está falhando
     $campos_faltantes = [];
@@ -387,9 +196,7 @@ if (isset($_POST['botao'])) {
         // NOVO:
         $_SESSION['mensagem'] = $mensagem_erro;
         $_SESSION['tipo_mensagem'] = "error";
-        error_log("CAMPOS FALTANTES: " . $mensagem_erro);
     } else {
-        error_log("✅ TODOS OS CAMPOS OBRIGATÓRIOS PREENCHIDOS");
         
         // Upload da imagem - VERSÃO CORRIGIDA
 $foto_curso = 'curso-padrao.jpg';
@@ -415,31 +222,21 @@ if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
 
         if (move_uploaded_file($temporario, $pasta . $novoNome)) {
             $foto_curso = $novoNome;
-            error_log("✅ IMAGEM SALVA COM SUCESSO: " . $foto_curso);
             
             // Verificar se o arquivo realmente foi criado
             if (file_exists($pasta . $novoNome)) {
-                error_log("✅ ARQUIVO CONFIRMADO NA PASTA: " . $novoNome);
             } else {
-                error_log("❌ ARQUIVO NÃO ENCONTRADO APÓS UPLOAD");
             }
         } else {
-            error_log("❌ FALHA NO move_uploaded_file");
-            error_log("Temporário: " . $temporario);
-            error_log("Destino: " . $pasta . $novoNome);
-            error_log("Permissões: " . substr(sprintf('%o', fileperms($pasta)), -4));
         }
     } else {
-        error_log("❌ FORMATO NÃO PERMITIDO: " . $extensao);
     }
 } else {
     $erro_upload = $_FILES['foto']['error'] ?? 'Nenhum arquivo';
-    error_log("❌ ERRO NO UPLOAD: " . $erro_upload);
 }
 
         // TENTAR CADASTRAR NO BANCO
         try {
-            error_log("🎯 TENTANDO INSERIR NO BANCO...");
             
             $cadastro = "INSERT INTO tb_cursos (nome_curso, carga_horaria, categoria, descricao, nivel, preco, imagem_curso, id_user) 
                         VALUES (:nome, :carga, :categoria, :descricao, :nivel, :preco, :foto, :id_user)";
@@ -456,9 +253,6 @@ if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
             
             if ($result->execute()) {
                 $ultimo_id = $conect->lastInsertId();
-                error_log("✅ CURSO CADASTRADO COM SUCESSO! ID: " . $ultimo_id);
-
-                   // 🎯 SOLUÇÃO 4: MATRICULAR AUTOMATICAMENTE O CRIADOR - COLE AQUI
                 try {
                     $matricula = "INSERT INTO tb_matriculas (id_curso, id_user, data_matricula, progresso) 
                                 VALUES (:id_curso, :id_user, NOW(), 0)";
@@ -467,11 +261,8 @@ if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
                     $result_matricula->bindParam(':id_user', $id_user, PDO::PARAM_INT);
                     
                     if ($result_matricula->execute()) {
-                        error_log("✅ CRIADOR AUTOMATICAMENTE MATRICULADO NO CURSO");
                     }
                 } catch (PDOException $e) {
-                    error_log("⚠️ AVISO: Não foi possível matricular o criador: " . $e->getMessage());
-                    // Não mostrar erro para o usuário, pois o curso foi criado com sucesso
                 }
 
                // NOVO:
@@ -481,23 +272,13 @@ $_SESSION['tipo_mensagem'] = "success";
 // ADICIONE O REDIRECT E EXIT
 echo '<script>window.location.href = window.location.href;</script>';
 exit();
-                
-                // Limpar formulário
-                echo '<script>
-                    setTimeout(() => {
-                        document.querySelector("form").reset();
-                        window.location.reload();
-                    }, 2000);
-                </script>';
             } else {
-                error_log("❌ ERRO NO EXECUTE()");
                 // NOVO:
 $_SESSION['mensagem'] = "Erro ao cadastrar curso. Tente novamente.";
 $_SESSION['tipo_mensagem'] = "error";
             }
             
         } catch (PDOException $e) {
-            error_log("❌ ERRO PDO: " . $e->getMessage());
             // NOVO:
 $_SESSION['mensagem'] = "Erro no banco de dados: " . $e->getMessage();
 $_SESSION['tipo_mensagem'] = "error";
@@ -514,7 +295,6 @@ try {
     $result->execute();
     $meus_cursos_criados = $result->fetchAll(PDO::FETCH_OBJ);
 } catch (PDOException $e) {
-    error_log("Erro ao buscar cursos criados: " . $e->getMessage());
 }
 
 // CORREÇÃO: Buscar cursos que o usuário está matriculado com verificação mais robusta
@@ -532,7 +312,6 @@ try {
 } catch (PDOException $e) {
     // Se der erro, definir como array vazio
     $meus_cursos_matriculados = [];
-    error_log("Erro ao buscar cursos matriculados: " . $e->getMessage());
 }
 
 // Cursos pré-definidos (removemos as URLs externas pois estamos usando imagem padrão)
@@ -636,7 +415,6 @@ try {
         }
     }
 } catch (PDOException $e) {
-    error_log("Erro ao cadastrar cursos automáticos: " . $e->getMessage());
 }
 
 // CORREÇÃO 4: BUSCAR CURSOS DISPONÍVEIS (APENAS DE OUTROS USUÁRIOS)
@@ -651,18 +429,11 @@ try {
     $cursos_disponiveis = $result->fetchAll(PDO::FETCH_OBJ);
     $total_cursos = count($cursos_disponiveis);
 } catch (PDOException $e) {
-   error_log("Erro ao buscar cursos disponíveis: " . $e->getMessage());
 }
 
-// === 🔍 DEBUG - VERIFICAÇÃO DE CURSOS - COLE AQUI ===
-error_log("=== VERIFICANDO CURSOS ===");
-error_log("Cursos criados: " . count($meus_cursos_criados));
-error_log("Cursos disponíveis: " . count($cursos_disponiveis));
-error_log("Cursos matriculados: " . count($meus_cursos_matriculados));
 
 // Verificar conteúdo dos cursos
 foreach ($cursos_disponiveis as $index => $curso) {
-    error_log("Curso $index: " . $curso->nome_curso . " - Imagem: " . $curso->imagem_curso);
 }
 
 // Agrupar cursos por categoria
@@ -1262,23 +1033,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
-function confirmarDelecao(id_curso, nome_curso) {
-    if (confirm(`Tem certeza que deseja deletar o curso "${nome_curso}"?\n\nEsta ação não pode ser desfeita!`)) {
-        // 🎯 TESTE ESTES CAMINHOS (um por vez):
-        
-        // Opção 1 - Se del-contatos.php está na pasta PAI de conteudo/
-        window.location.href = `../del-contatos.php?idDel=${id_curso}&tipo=curso`;
-        
-        // Opção 2 - Se está na mesma pasta que config/
-        // window.location.href = `../../paginas/del-contatos.php?idDel=${id_curso}&tipo=curso`;
-        
-        // Opção 3 - Caminho absoluto
-        // window.location.href = `/index/clone-agenda/paginas/del-contatos.php?idDel=${id_curso}&tipo=curso`;
-        
-        // Opção 4 - URL completa
-        // window.location.href = `http://localhost/index/clone-agenda/paginas/del-contatos.php?idDel=${id_curso}&tipo=curso`;
-    }
-}
 
 function confirmarDelecao(id_curso, nome_curso) {
     if (confirm(`Tem certeza que deseja deletar o curso "${nome_curso}"?\n\nEsta ação não pode ser desfeita!`)) {
@@ -1290,7 +1044,6 @@ function confirmarDelecao(id_curso, nome_curso) {
 // 🎯 MOSTRAR MENSAGENS DA SESSÃO
 document.addEventListener('DOMContentLoaded', function() {
     <?php if (isset($_SESSION['mensagem']) && !empty($_SESSION['mensagem'])): ?>
-    console.log('📢 Mensagem da sessão:', '<?php echo $_SESSION['mensagem']; ?>');
     setTimeout(() => {
         mostrarMensagem('<?php echo addslashes($_SESSION['mensagem']); ?>', '<?php echo $_SESSION['tipo_mensagem'] ?? 'success'; ?>');
     }, 500);
@@ -1302,26 +1055,6 @@ document.addEventListener('DOMContentLoaded', function() {
     ?>
     <?php endif; ?>
 });
-
-// 🎯 DEBUG - VERIFICAR CAMINHOS (REMOVA DEPOIS)
-console.log('📍 Caminho atual:', window.location.pathname);
-console.log('📁 URL completa:', window.location.href);
-
-// Teste manual no console
-function testarCaminho() {
-    const caminhos = [
-        '../del-contatos.php',
-        '../../paginas/del-contatos.php',
-        '/index/clone-agenda/paginas/del-contatos.php'
-    ];
-    
-    caminhos.forEach(caminho => {
-        console.log('🔗 Testando:', caminho);
-    });
-}
-
-console.log('✅ DEBUG: Função testarCaminho() carregada!');
-console.log('💡 Execute no console: testarCaminho()');
 
 // Função para editar curso
 function editarCurso(id_curso) {
